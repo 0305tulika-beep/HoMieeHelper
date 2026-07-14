@@ -1,0 +1,67 @@
+com.homiee.helper.app-animation-release-0 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\027bf47a19b7a3028c0ff4de56f3e0ae\transformed\animation-release\res
+com.homiee.helper.app-viewpager2-1.0.0-1 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\02ae404d15cc0e015502b2bfbaf19ce2\transformed\viewpager2-1.0.0\res
+com.homiee.helper.app-emoji2-views-helper-1.3.0-2 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\0464bfd97e869018b51c3be505b89430\transformed\emoji2-views-helper-1.3.0\res
+com.homiee.helper.app-coordinatorlayout-1.1.0-3 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\05264ec3eb49ca39a95c1bee7ebee7ec\transformed\coordinatorlayout-1.1.0\res
+com.homiee.helper.app-ui-text-release-4 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\1075ebd70a653c1aa5a3bf8fda284943\transformed\ui-text-release\res
+com.homiee.helper.app-navigation-runtime-2.7.7-5 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\14a97d41e58de4660a37113140b927f0\transformed\navigation-runtime-2.7.7\res
+com.homiee.helper.app-savedstate-1.2.1-6 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\18c4141a57c6c9a051e992d23d42e4b7\transformed\savedstate-1.2.1\res
+com.homiee.helper.app-profileinstaller-1.3.1-7 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\1b7e4a57e0e0d7c9ee8ad2d28b9cad07\transformed\profileinstaller-1.3.1\res
+com.homiee.helper.app-constraintlayout-2.0.1-8 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\1e3f3151643cfc32c9d6b9f32979a30c\transformed\constraintlayout-2.0.1\res
+com.homiee.helper.app-cardview-1.0.0-9 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\208cd16a41531493d739ae8de91857ef\transformed\cardview-1.0.0\res
+com.homiee.helper.app-lifecycle-process-2.8.2-10 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\230da8ecc8e7c9ff994608991113ff47\transformed\lifecycle-process-2.8.2\res
+com.homiee.helper.app-navigation-runtime-ktx-2.7.7-11 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\313db83f4ad28d204d7285b4d6800cdc\transformed\navigation-runtime-ktx-2.7.7\res
+com.homiee.helper.app-lifecycle-viewmodel-savedstate-2.8.2-12 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\35ba1a278c18043ab8f6cf6280c3f498\transformed\lifecycle-viewmodel-savedstate-2.8.2\res
+com.homiee.helper.app-savedstate-ktx-1.2.1-13 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\445ba0db34fa237be791ddb7c1aecfa3\transformed\savedstate-ktx-1.2.1\res
+com.homiee.helper.app-ui-tooling-release-14 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\50d953758b87cb196f21320b44fe7792\transformed\ui-tooling-release\res
+com.homiee.helper.app-activity-1.9.0-15 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\51e3309579cdca6094a36e9f43002884\transformed\activity-1.9.0\res
+com.homiee.helper.app-annotation-experimental-1.4.0-16 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\530098c9730c11cc0d7d9cdb796e7e40\transformed\annotation-experimental-1.4.0\res
+com.homiee.helper.app-appcompat-1.6.1-17 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\55658f6e0d6113f1fbbc10dea25eb1ab\transformed\appcompat-1.6.1\res
+com.homiee.helper.app-lifecycle-runtime-release-18 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\604883390edb51472673c2d94b2f43f3\transformed\lifecycle-runtime-release\res
+com.homiee.helper.app-startup-runtime-1.1.1-19 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\6b7662076f603a118c50b6f80e2bddd2\transformed\startup-runtime-1.1.1\res
+com.homiee.helper.app-activity-ktx-1.9.0-20 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\7097fe98990b5ac3f429798fb78e76c7\transformed\activity-ktx-1.9.0\res
+com.homiee.helper.app-ui-release-21 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\7395399a2307f2e0aa65718d9c6b8c20\transformed\ui-release\res
+com.homiee.helper.app-ui-tooling-preview-release-22 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\74a3c0388045efcec3bf2bfa143cf271\transformed\ui-tooling-preview-release\res
+com.homiee.helper.app-lifecycle-livedata-core-ktx-2.8.2-23 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\74f3fb14f3c8ada69470356d74a2806b\transformed\lifecycle-livedata-core-ktx-2.8.2\res
+com.homiee.helper.app-lifecycle-runtime-ktx-release-24 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\763b221fa041e3d3552f873197716a30\transformed\lifecycle-runtime-ktx-release\res
+com.homiee.helper.app-ui-util-release-25 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\7843052746af64325aa3c81e812e65df\transformed\ui-util-release\res
+com.homiee.helper.app-transition-1.5.0-26 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\882a677fb19e687411bb1515f54efb5d\transformed\transition-1.5.0\res
+com.homiee.helper.app-appcompat-resources-1.6.1-27 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\890be69a8d0fb3d77450c5fe8b79d4d5\transformed\appcompat-resources-1.6.1\res
+com.homiee.helper.app-foundation-layout-release-28 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\8a79829b55058cfd578fa9b293fa5ba2\transformed\foundation-layout-release\res
+com.homiee.helper.app-runtime-saveable-release-29 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\8af6f798d8d105f6654731a45a0e3819\transformed\runtime-saveable-release\res
+com.homiee.helper.app-core-ktx-1.13.1-30 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\8af9911667344660df58f30028effbe2\transformed\core-ktx-1.13.1\res
+com.homiee.helper.app-lifecycle-viewmodel-release-31 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\8e186ba5e8ab4f1b2a0850e9914ce9de\transformed\lifecycle-viewmodel-release\res
+com.homiee.helper.app-material-icons-core-release-32 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\942ada2dc1251445a80f15da418ab06c\transformed\material-icons-core-release\res
+com.homiee.helper.app-animation-core-release-33 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\97fd016c0e04d704da818bfdcf0f74cb\transformed\animation-core-release\res
+com.homiee.helper.app-activity-compose-1.9.0-34 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\9c00e92c12108aa869a331dfbc63a670\transformed\activity-compose-1.9.0\res
+com.homiee.helper.app-lifecycle-livedata-2.8.2-35 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\9c4e334ea23aa7041adf6eb816edec3c\transformed\lifecycle-livedata-2.8.2\res
+com.homiee.helper.app-lifecycle-livedata-core-2.8.2-36 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\9d257bc2b7502ec965b94e09e87991cf\transformed\lifecycle-livedata-core-2.8.2\res
+com.homiee.helper.app-foundation-release-37 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\a00ad0bf24dad9ed2f9727cd87940624\transformed\foundation-release\res
+com.homiee.helper.app-navigation-common-2.7.7-38 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\a0f16a01a6c84ca1ff831f81d73c746a\transformed\navigation-common-2.7.7\res
+com.homiee.helper.app-ui-graphics-release-39 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\a248906356a0aa2ce3c052cbd89651cb\transformed\ui-graphics-release\res
+com.homiee.helper.app-material-release-40 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\a319fcc48279b31f8648aaabfe1ab68e\transformed\material-release\res
+com.homiee.helper.app-material3-release-41 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\a6828501b0d56cf0611eae3f7a1b6dea\transformed\material3-release\res
+com.homiee.helper.app-material-icons-extended-release-42 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\a73a78e684beca4d20bb61cfbafe3f69\transformed\material-icons-extended-release\res
+com.homiee.helper.app-recyclerview-1.1.0-43 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\a8595feb890b564d675b025d3bd18b96\transformed\recyclerview-1.1.0\res
+com.homiee.helper.app-lifecycle-viewmodel-ktx-2.8.2-44 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\bba1bd95bede3b205610737295da1b7c\transformed\lifecycle-viewmodel-ktx-2.8.2\res
+com.homiee.helper.app-ui-tooling-data-release-45 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\bbeb8598182da0463ff7b12203cef235\transformed\ui-tooling-data-release\res
+com.homiee.helper.app-material-1.12.0-46 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\bc9a1e72b5c046e1644cf0f5f0f65d70\transformed\material-1.12.0\res
+com.homiee.helper.app-material-ripple-release-47 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\bde104c9c6f517830e43e87d12bd55e5\transformed\material-ripple-release\res
+com.homiee.helper.app-core-runtime-2.2.0-48 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\bf8138003da10fa164a64b2d6e47294e\transformed\core-runtime-2.2.0\res
+com.homiee.helper.app-navigation-compose-2.7.7-49 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\c5595503a6153ca7b273d37217cb59c9\transformed\navigation-compose-2.7.7\res
+com.homiee.helper.app-ui-unit-release-50 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\d3c969d97ec974b2b2a8ac27f4b26e07\transformed\ui-unit-release\res
+com.homiee.helper.app-runtime-release-51 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\d6ba76d0cedffe033603242a061a52e9\transformed\runtime-release\res
+com.homiee.helper.app-customview-poolingcontainer-1.0.0-52 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\dc848b9cbee328eba635da0bd9fa0871\transformed\customview-poolingcontainer-1.0.0\res
+com.homiee.helper.app-lifecycle-viewmodel-compose-release-53 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\e6c352f747646240d4ba73b8e13e5822\transformed\lifecycle-viewmodel-compose-release\res
+com.homiee.helper.app-drawerlayout-1.1.1-54 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\ec4085d9a779e0b8abc884fc5de6ffbf\transformed\drawerlayout-1.1.1\res
+com.homiee.helper.app-navigation-common-ktx-2.7.7-55 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\ee90e1c1c4d4909abf4998ad10fdf86e\transformed\navigation-common-ktx-2.7.7\res
+com.homiee.helper.app-emoji2-1.3.0-56 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\ee92800a559a67746c59949df0a19fa0\transformed\emoji2-1.3.0\res
+com.homiee.helper.app-fragment-1.3.6-57 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\f3d0dc72206b616b25699ed10b9372ea\transformed\fragment-1.3.6\res
+com.homiee.helper.app-core-1.13.1-58 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\f50e3a49977454a547cfb809a1fab86e\transformed\core-1.13.1\res
+com.homiee.helper.app-ui-geometry-release-59 C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\fa48dcae1996e610cf1f66599aa95481\transformed\ui-geometry-release\res
+com.homiee.helper.app-pngs-60 C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\build\generated\res\pngs\debug
+com.homiee.helper.app-resValues-61 C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\build\generated\res\resValues\debug
+com.homiee.helper.app-packageDebugResources-62 C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\build\intermediates\incremental\debug\packageDebugResources\merged.dir
+com.homiee.helper.app-packageDebugResources-63 C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
+com.homiee.helper.app-debug-64 C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\build\intermediates\merged_res\debug\mergeDebugResources
+com.homiee.helper.app-debug-65 C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\debug\res
+com.homiee.helper.app-main-66 C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\res

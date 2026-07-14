@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.homiee.helper.app-mergeDebugResources-62:/values-v18/values-v18.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\Tulika Mishra\\.gradle\\caches\\9.0-milestone-1\\transforms\\55658f6e0d6113f1fbbc10dea25eb1ab\\transformed\\appcompat-1.6.1\\res\\values-v18\\values-v18.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "48",
+                        "endOffsets": "99"
+                    }
+                }
+            ]
+        }
+    ]
+}
