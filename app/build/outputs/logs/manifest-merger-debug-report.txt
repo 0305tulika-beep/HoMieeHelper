@@ -1,9 +1,9 @@
 -- Merging decision tree log ---
 manifest
-ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:2:1-21:12
-INJECTED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:2:1-21:12
-INJECTED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:2:1-21:12
-INJECTED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:2:1-21:12
+ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:2:1-23:12
+INJECTED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:2:1-23:12
+INJECTED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:2:1-23:12
+INJECTED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:2:1-23:12
 MERGED from [androidx.navigation:navigation-common:2.7.7] C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\a0f16a01a6c84ca1ff831f81d73c746a\transformed\navigation-common-2.7.7\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.navigation:navigation-runtime:2.7.7] C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\14a97d41e58de4660a37113140b927f0\transformed\navigation-runtime-2.7.7\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.navigation:navigation-common-ktx:2.7.7] C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\ee90e1c1c4d4909abf4998ad10fdf86e\transformed\navigation-common-ktx-2.7.7\AndroidManifest.xml:2:1-7:12
@@ -69,6 +69,7 @@ MERGED from [androidx.activity:activity-compose:1.9.0] C:\Users\Tulika Mishra\.g
 MERGED from [androidx.compose.runtime:runtime-saveable-android:1.6.8] C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\8af6f798d8d105f6654731a45a0e3819\transformed\runtime-saveable-release\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.compose.runtime:runtime-android:1.6.8] C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\d6ba76d0cedffe033603242a061a52e9\transformed\runtime-release\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.annotation:annotation-experimental:1.4.0] C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\530098c9730c11cc0d7d9cdb796e7e40\transformed\annotation-experimental-1.4.0\AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.security:security-crypto:1.1.0-alpha06] C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\58f9ec9712d251d203edff624edfcf6a\transformed\security-crypto-1.1.0-alpha06\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.cardview:cardview:1.0.0] C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\208cd16a41531493d739ae8de91857ef\transformed\cardview-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.interpolator:interpolator:1.0.0] C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\0ffff5232b25c64e783155315cde7378\transformed\interpolator-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\907e1ed9389be286e16ccdf5442e0310\transformed\versionedparcelable-1.1.1\AndroidManifest.xml:17:1-27:12
@@ -88,9 +89,13 @@ MERGED from [androidx.arch.core:core-runtime:2.2.0] C:\Users\Tulika Mishra\.grad
 		INJECTED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml
 	xmlns:android
 		ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:2:11-69
+uses-permission#android.permission.INTERNET
+ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:3:5-67
+	android:name
+		ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:3:22-64
 application
-ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:4:5-20:19
-INJECTED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:4:5-20:19
+ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:4:5-22:19
+INJECTED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:4:5-22:19
 MERGED from [androidx.compose.ui:ui-tooling-android:1.6.8] C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\50d953758b87cb196f21320b44fe7792\transformed\ui-tooling-release\AndroidManifest.xml:22:5-26:19
 MERGED from [androidx.compose.ui:ui-tooling-android:1.6.8] C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\50d953758b87cb196f21320b44fe7792\transformed\ui-tooling-release\AndroidManifest.xml:22:5-26:19
 MERGED from [com.google.android.material:material:1.12.0] C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\bc9a1e72b5c046e1644cf0f5f0f65d70\transformed\material-1.12.0\AndroidManifest.xml:22:5-20
@@ -114,33 +119,37 @@ MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\Tulika Mishra\.gra
 	android:appComponentFactory
 		ADDED from [androidx.core:core:1.13.1] C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\f50e3a49977454a547cfb809a1fab86e\transformed\core-1.13.1\AndroidManifest.xml:28:18-86
 	android:supportsRtl
-		ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:8:9-35
+		ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:10:9-35
 	android:label
-		ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:6:9-41
+		ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:8:9-41
 	android:allowBackup
-		ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:5:9-35
+		ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:7:9-35
 	android:theme
-		ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:7:9-50
+		ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:9:9-50
+	android:networkSecurityConfig
+		ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:6:9-69
+	android:name
+		ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:5:9-40
 activity#com.homiee.helper.MainActivity
-ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:10:9-19:20
+ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:12:9-21:20
 	android:windowSoftInputMode
-		ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:14:13-55
+		ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:16:13-55
 	android:exported
-		ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:12:13-36
+		ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:14:13-36
 	android:theme
-		ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:13:13-54
+		ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:15:13-54
 	android:name
-		ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:11:13-41
+		ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:13:13-41
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:15:13-18:29
+ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:17:13-20:29
 action#android.intent.action.MAIN
-ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:16:17-69
+ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:18:17-69
 	android:name
-		ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:16:25-66
+		ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:18:25-66
 category#android.intent.category.LAUNCHER
-ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:17:17-77
+ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:19:17-77
 	android:name
-		ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:17:27-74
+		ADDED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml:19:27-74
 uses-sdk
 INJECTED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\src\main\AndroidManifest.xml
@@ -275,6 +284,8 @@ MERGED from [androidx.compose.runtime:runtime-android:1.6.8] C:\Users\Tulika Mis
 MERGED from [androidx.compose.runtime:runtime-android:1.6.8] C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\d6ba76d0cedffe033603242a061a52e9\transformed\runtime-release\AndroidManifest.xml:5:5-44
 MERGED from [androidx.annotation:annotation-experimental:1.4.0] C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\530098c9730c11cc0d7d9cdb796e7e40\transformed\annotation-experimental-1.4.0\AndroidManifest.xml:5:5-44
 MERGED from [androidx.annotation:annotation-experimental:1.4.0] C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\530098c9730c11cc0d7d9cdb796e7e40\transformed\annotation-experimental-1.4.0\AndroidManifest.xml:5:5-44
+MERGED from [androidx.security:security-crypto:1.1.0-alpha06] C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\58f9ec9712d251d203edff624edfcf6a\transformed\security-crypto-1.1.0-alpha06\AndroidManifest.xml:20:5-44
+MERGED from [androidx.security:security-crypto:1.1.0-alpha06] C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\58f9ec9712d251d203edff624edfcf6a\transformed\security-crypto-1.1.0-alpha06\AndroidManifest.xml:20:5-44
 MERGED from [androidx.cardview:cardview:1.0.0] C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\208cd16a41531493d739ae8de91857ef\transformed\cardview-1.0.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.cardview:cardview:1.0.0] C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\208cd16a41531493d739ae8de91857ef\transformed\cardview-1.0.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.interpolator:interpolator:1.0.0] C:\Users\Tulika Mishra\.gradle\caches\9.0-milestone-1\transforms\0ffff5232b25c64e783155315cde7378\transformed\interpolator-1.0.0\AndroidManifest.xml:20:5-44

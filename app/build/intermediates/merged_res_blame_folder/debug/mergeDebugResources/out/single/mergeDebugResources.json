@@ -1,6 +1,10 @@
 [
     {
-        "merged": "com.homiee.helper.app-debug-64:/drawable_img.png.flat",
-        "source": "com.homiee.helper.app-main-66:/drawable/img.png"
+        "merged": "com.homiee.helper.app-debug-65:/xml_network_security_config.xml.flat",
+        "source": "com.homiee.helper.app-main-67:/xml/network_security_config.xml"
+    },
+    {
+        "merged": "com.homiee.helper.app-debug-65:/drawable_img.png.flat",
+        "source": "com.homiee.helper.app-main-67:/drawable/img.png"
     }
 ]

@@ -3,3 +3,4 @@ local
 drawable img
 string app_name
 style Theme.HomieeHelper
+xml network_security_config

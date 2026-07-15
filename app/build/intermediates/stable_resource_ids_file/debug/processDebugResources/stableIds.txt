@@ -206,6 +206,7 @@ com.homiee.helper:style/Widget.AppCompat.RatingBar = 0x7f0f0324
 com.homiee.helper:style/Widget.AppCompat.PopupMenu.Overflow = 0x7f0f0320
 com.homiee.helper:styleable/OnClick = 0x7f100071
 com.homiee.helper:style/Widget.AppCompat.ListView = 0x7f0f031c
+com.homiee.helper:xml/network_security_config = 0x7f110000
 com.homiee.helper:style/Widget.AppCompat.ListPopupWindow = 0x7f0f031b
 com.homiee.helper:style/Widget.AppCompat.Light.Spinner.DropDown.ActionBar = 0x7f0f0319
 com.homiee.helper:style/Widget.AppCompat.Light.PopupMenu.Overflow = 0x7f0f0317

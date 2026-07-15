@@ -9,39 +9,55 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.homiee.helper.ui.components.AuthScaffold
 import com.homiee.helper.ui.components.AuthTitle
 import com.homiee.helper.ui.components.PrimaryButton
 import com.homiee.helper.ui.theme.BorderGray
 import com.homiee.helper.ui.theme.TealPrimary
 import com.homiee.helper.ui.theme.TextSecondary
+import com.homiee.helper.viewmodel.OtpUiState
+import com.homiee.helper.viewmodel.OtpViewModel
 import kotlinx.coroutines.delay
 
 private const val RESEND_SECONDS = 28
+private val ErrorRed = Color(0xFFFF6B6B)
 
 @Composable
 fun OtpScreen(
     email: String,
     onBackClick: () -> Unit,
-    onVerifyClick: () -> Unit
+    onVerifyClick: () -> Unit,
+    // Skipped entirely in preview — OtpViewModel builds a repository that
+    // touches Retrofit + EncryptedSharedPreferences.
+    viewModel: OtpViewModel? = if (LocalInspectionMode.current) null
+    else viewModel(factory = OtpViewModel.Factory(LocalContext.current))
 ) {
     val otpValues = remember { mutableStateListOf("", "", "", "", "", "") }
     val focusRequesters = remember { List(6) { FocusRequester() } }
     var secondsLeft by remember { mutableIntStateOf(RESEND_SECONDS) }
+
+    val uiState by viewModel?.uiState?.collectAsState()
+        ?: remember { mutableStateOf(OtpUiState()) }
 
     LaunchedEffect(Unit) {
         focusRequesters[0].requestFocus()
@@ -51,6 +67,14 @@ fun OtpScreen(
         if (secondsLeft > 0) {
             delay(1000)
             secondsLeft--
+        }
+    }
+
+    // OTP verified on the server → move into onboarding.
+    LaunchedEffect(uiState.isVerified) {
+        if (uiState.isVerified) {
+            onVerifyClick()
+            viewModel?.resetState()
         }
     }
 
@@ -101,6 +125,11 @@ fun OtpScreen(
             }
         }
 
+        if (uiState.errorMessage != null) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(uiState.errorMessage ?: "", color = ErrorRed, fontSize = 13.sp)
+        }
+
         Spacer(modifier = Modifier.height(28.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
             if (secondsLeft > 0) {
@@ -113,16 +142,25 @@ fun OtpScreen(
                 )
             } else {
                 Text(
-                    text = "Resend OTP",
+                    text = if (uiState.isResending) "Resending..." else "Resend OTP",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = TealPrimary,
-                    modifier = Modifier.clickable { secondsLeft = RESEND_SECONDS }
+                    modifier = Modifier.clickable(enabled = !uiState.isResending) {
+                        secondsLeft = RESEND_SECONDS
+                        viewModel?.resendOtp(email)
+                    }
                 )
             }
         }
 
         Spacer(modifier = Modifier.weight(1f))
-        PrimaryButton(text = "Verify & Continue", onClick = onVerifyClick)
+        PrimaryButton(
+            text = if (uiState.isLoading) "Verifying..." else "Verify & Continue",
+            enabled = !uiState.isLoading && otpValues.all { it.isNotEmpty() },
+            onClick = {
+                viewModel?.verifyOtp(email, otpValues.joinToString(""))
+            }
+        )
     }
 }
