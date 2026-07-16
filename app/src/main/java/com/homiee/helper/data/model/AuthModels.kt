@@ -28,6 +28,10 @@ data class VerifyOtpRequest(
     val otp: String
 )
 
+data class DeactivateRequest(
+    val password: String
+)
+
 // ── Shared pieces ─────────────────────────────────────────────────────────
 
 data class UserDto(
@@ -68,6 +72,12 @@ data class OtpSentResponse(
     val status: String,
     val message: String,
     val data: OtpSentData?
+)
+
+// Used by /auth/logout/, /auth/deactivate/, /auth/delete/
+data class GenericResponse(
+    val status: String,
+    val message: String
 )
 
 // Shape of 400/429/409 error bodies

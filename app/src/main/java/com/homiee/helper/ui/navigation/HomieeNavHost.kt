@@ -12,7 +12,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.homiee.helper.data.local.OnboardingProgressStore
 import com.homiee.helper.data.local.TokenManager
 import com.homiee.helper.ui.components.HelperNavItem
 
@@ -73,9 +72,6 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
                     val tokenManager = TokenManager.getInstance(context)
                     val destination = when {
                         !tokenManager.isLoggedIn() -> Screen.SignUp.route
-                        // TODO: resume from the exact step (OnboardingProgressStore.getCurrentStep)
-                        // once each form screen persists + restores its own field state.
-                        // For now, restart always re-enters onboarding at step 1.
                         !tokenManager.isOnboardingComplete() -> Screen.PersonalInformation.route
                         else -> Screen.Home.route
                     }
@@ -89,11 +85,14 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
         composable(Screen.Login.route) {
             LoginScreen(
                 onLoginClick = {
+                    // A successful login is an existing, already-onboarded helper —
+                    // send them straight to the dashboard, clearing the whole auth stack.
                     navController.navigate(Screen.Home.route) {
                         popUpTo(0) { inclusive = true }
                     }
                 },
                 onGoogleLoginClick = {
+                    // TODO: Google sign-in isn't wired to a real account yet.
                     navController.navigate(Screen.PersonalInformation.route) {
                         popUpTo(0) { inclusive = true }
                     }
@@ -199,7 +198,6 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
             val context = LocalContext.current
             val finishOnboarding: () -> Unit = {
                 TokenManager.getInstance(context).setOnboardingComplete(true)
-                OnboardingProgressStore.clear(context) // no-op for now, reserved for future step-resume
                 // Onboarding fully done — clears the whole form stack behind the user.
                 navController.navigate(Screen.Home.route) {
                     popUpTo(0) { inclusive = true }
@@ -217,7 +215,6 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
         composable(Screen.Home.route) {
             val currentRoute by navController.currentBackStackEntryAsState()
             HomeScreen(
-                onNotificationsClick = { /* TODO: notifications */ },
                 onCompleteProfileClick = { navController.navigate(Screen.PersonalInformation.route) },
                 onViewRequest = { id -> navController.navigate(Screen.RequestDetails.createRoute(id)) },
                 onAcceptRequest = { /* TODO: accept request */ },

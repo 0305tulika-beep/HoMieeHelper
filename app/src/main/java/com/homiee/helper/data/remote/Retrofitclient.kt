@@ -38,6 +38,8 @@ object RetrofitClient {
             val path = original.url.encodedPath
 
             // Public auth endpoints never need — and shouldn't send — a Bearer token.
+            // Attaching a stale/expired token to these can trigger a 401 from DRF's
+            // authentication layer before the view's AllowAny permission is checked.
             val isPublicAuthEndpoint = path.contains("/api/auth/login") ||
                     path.contains("/api/auth/register") ||
                     path.contains("/api/auth/resend-otp") ||

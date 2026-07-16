@@ -5,6 +5,8 @@ import android.util.Log
 import com.homiee.helper.data.local.TokenManager
 import com.homiee.helper.data.model.ApiErrorResponse
 import com.homiee.helper.data.model.AuthResponse
+import com.homiee.helper.data.model.DeactivateRequest
+import com.homiee.helper.data.model.GenericResponse
 import com.homiee.helper.data.model.LoginRequest
 import com.homiee.helper.data.model.OtpSentResponse
 import com.homiee.helper.data.model.RegisterRequest
@@ -138,6 +140,57 @@ class AuthRepository(context: Context) {
                     )
                 }
                 ApiResult.Success(body)
+            } else {
+                parseError(response)
+            }
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Network error. Please try again.")
+        }
+    }
+
+    suspend fun logout(): ApiResult<GenericResponse> {
+        return try {
+            val response = api.logout()
+            if (response.isSuccessful && response.body() != null) {
+                tokenManager.clearAll()
+                ApiResult.Success(response.body()!!)
+            } else if (response.code() == 401) {
+                tokenManager.clearAll()
+                ApiResult.Success(GenericResponse(status = "success", message = "Logged out successfully."))
+            } else {
+                parseError(response)
+            }
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Network error. Please try again.")
+        }
+    }
+
+    suspend fun deactivateAccount(password: String): ApiResult<GenericResponse> {
+        return try {
+            val response = api.deactivateAccount(DeactivateRequest(password))
+            if (response.isSuccessful && response.body() != null) {
+                tokenManager.clearAll()
+                ApiResult.Success(response.body()!!)
+            } else if (response.code() == 401) {
+                tokenManager.clearAll()
+                ApiResult.Success(GenericResponse(status = "success", message = "Your account has been deactivated."))
+            } else {
+                parseError(response)
+            }
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Network error. Please try again.")
+        }
+    }
+
+    suspend fun deleteAccount(password: String): ApiResult<GenericResponse> {
+        return try {
+            val response = api.deleteAccount(DeactivateRequest(password))
+            if (response.isSuccessful && response.body() != null) {
+                tokenManager.clearAll()
+                ApiResult.Success(response.body()!!)
+            } else if (response.code() == 401) {
+                tokenManager.clearAll()
+                ApiResult.Success(GenericResponse(status = "success", message = "Your account has been permanently deleted."))
             } else {
                 parseError(response)
             }

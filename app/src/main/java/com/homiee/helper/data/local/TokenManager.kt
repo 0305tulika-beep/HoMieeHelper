@@ -7,8 +7,6 @@ import androidx.security.crypto.MasterKey
 
 class TokenManager private constructor(context: Context) {
 
-    private val appContext = context.applicationContext
-
     private val masterKey = MasterKey.Builder(context)
         .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
         .build()
@@ -69,7 +67,6 @@ class TokenManager private constructor(context: Context) {
 
     fun clearAll() {
         prefs.edit().clear().apply()
-        OnboardingProgressStore.clear(appContext)
     }
 
     companion object {

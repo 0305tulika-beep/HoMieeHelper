@@ -7,7 +7,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -21,6 +20,8 @@ import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,16 +29,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.homiee.helper.ui.components.*
 import com.homiee.helper.ui.theme.*
+import com.homiee.helper.viewmodel.AccountActionUiState
+import com.homiee.helper.viewmodel.AccountActionViewModel
+import com.homiee.helper.viewmodel.AccountAction
+import androidx.compose.ui.text.input.VisualTransformation
 
 private data class HelperProfile(
     val name: String = "Sunita Agarwal",
@@ -57,18 +60,13 @@ private data class HelperProfile(
 
 private data class ServiceCharge(val label: String, val price: String)
 
-/** Consistent 1dp shadow used across Home / Job Requests / My Jobs — applied here too. */
-private val cardElevation = Modifier.shadow(elevation = 1.dp, shape = RoundedCornerShape(16.dp), clip = false)
-
 @Composable
 fun ProfileScreen(
     onViewVerifiedDocuments: () -> Unit,
     onViewTotalEarnings: () -> Unit,
-    onLogout: () -> Unit,
-    onDeactivateAccount: () -> Unit,
-    onDeleteAccount: () -> Unit,
+    accountViewModel: AccountActionViewModel? = null,
+    onAccountCleared: () -> Unit,
     onContactSupport: () -> Unit,
-    onEditProfilePhoto: () -> Unit = {},
     currentRoute: String? = null,
     onNavItemClick: (HelperNavItem) -> Unit = {}
 ) {
@@ -119,33 +117,10 @@ fun ProfileScreen(
                 ) {
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Identity card — avatar now has a small edit/camera badge on it,
-                    // matching the reference. Actually swapping the photo needs an image
-                    // picker + upload flow, so onEditProfilePhoto is just wired as a stub
-                    // for now.
-                    // TODO: hook onEditProfilePhoto up to an image picker + upload to backend.
-                    SectionCard(modifier = cardElevation) {
+                    // Identity card
+                    SectionCard {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box {
-                                InitialsAvatar(initials = profile.initials, size = 64.dp)
-                                Box(
-                                    modifier = Modifier
-                                        .align(Alignment.BottomEnd)
-                                        .size(22.dp)
-                                        .clip(CircleShape)
-                                        .background(Color.White)
-                                        .border(1.dp, BorderGray, CircleShape)
-                                        .clickable { onEditProfilePhoto() },
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        Icons.Filled.CameraAlt,
-                                        contentDescription = "Edit profile photo",
-                                        tint = TealPrimary,
-                                        modifier = Modifier.size(12.dp)
-                                    )
-                                }
-                            }
+                            InitialsAvatar(initials = profile.initials, size = 64.dp)
                             Spacer(modifier = Modifier.width(14.dp))
                             Column {
                                 Text(profile.name, fontSize = 17.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
@@ -159,55 +134,38 @@ fun ProfileScreen(
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
-                    SectionCard(modifier = cardElevation) {
-                        SectionHeader(icon = Icons.Filled.Person, title = "About Me")
+                    SectionCard {
+                        Text("About Me", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(profile.about, fontSize = 12.sp, color = TextSecondary, lineHeight = 17.sp)
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
-                    SectionCard(modifier = cardElevation) {
-                        SectionHeader(icon = Icons.Filled.Badge, title = "Personal Information")
-                        Spacer(modifier = Modifier.height(10.dp))
-                        LabeledDetailRow(label = "Date of Birth", value = profile.dob)
-                        Spacer(modifier = Modifier.height(10.dp))
-                        // Address gets its own row: label stays put on the left, the value
-                        // sits in a fixed column to the right and grows downward (wraps
-                        // onto as many lines as it needs) instead of squeezing sideways
-                        // into — or overlapping — the "Address" label.
-                        LabeledDetailRow(label = "Address", value = profile.address)
-                        Spacer(modifier = Modifier.height(12.dp))
-                        // Elaborated into a full tappable row (icon + title + short
-                        // description + chevron) instead of a bare text link.
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(TealPale)
-                                .clickable { onViewVerifiedDocuments() }
-                                .padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(Icons.Filled.VerifiedUser, contentDescription = null, tint = TealPrimary, modifier = Modifier.size(20.dp))
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("View Verified Documents", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
-                                Text("Aadhaar, PAN, police verification & more", fontSize = 11.sp, color = TextSecondary)
-                            }
-                            Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = TealPrimary)
-                        }
+                    SectionCard {
+                        Text("Personal Information", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                        Spacer(modifier = Modifier.height(6.dp))
+                        InfoRow("Date of Birth", profile.dob)
+                        InfoRow("Address", profile.address)
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            "View Verified Documents",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = TealPrimary,
+                            modifier = Modifier.clickable { onViewVerifiedDocuments() }
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
-                    SectionCard(modifier = cardElevation) {
-                        SectionHeader(icon = Icons.Filled.Payments, title = "Services & Charges")
+                    SectionCard {
+                        Text("Services & Charges", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                         Spacer(modifier = Modifier.height(6.dp))
                         services.forEach { InfoRow(it.label, it.price) }
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
-                    SectionCard(modifier = cardElevation) {
-                        SectionHeader(icon = Icons.Filled.Translate, title = "Languages Spoken")
+                    SectionCard {
+                        Text("Languages Spoken", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                         Spacer(modifier = Modifier.height(10.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             profile.languages.forEach { lang ->
@@ -219,15 +177,15 @@ fun ProfileScreen(
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
-                    SectionCard(modifier = cardElevation) {
-                        SectionHeader(icon = Icons.Filled.WorkHistory, title = "Experience")
+                    SectionCard {
+                        Text("Experience", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(profile.experience, fontSize = 13.sp, color = TextSecondary)
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
-                    SectionCard(modifier = cardElevation) {
-                        SectionHeader(icon = Icons.Filled.CalendarMonth, title = "Working Days")
+                    SectionCard {
+                        Text("Working Days", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                         Spacer(modifier = Modifier.height(10.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             profile.allDays.forEach { day ->
@@ -252,7 +210,6 @@ fun ProfileScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .then(cardElevation)
                             .clip(RoundedCornerShape(16.dp))
                             .background(Color.White)
                             .clickable { onViewTotalEarnings() }
@@ -282,46 +239,9 @@ fun ProfileScreen(
         SettingsPanel(
             visible = settingsOpen,
             onDismiss = { settingsOpen = false },
-            onLogout = onLogout,
-            onDeactivateAccount = onDeactivateAccount,
-            onDeleteAccount = onDeleteAccount,
+            accountViewModel = accountViewModel,
+            onAccountCleared = onAccountCleared,
             onContactSupport = onContactSupport
-        )
-    }
-}
-
-/** Small icon + bold title used at the top of every profile section card. */
-@Composable
-private fun SectionHeader(icon: ImageVector, title: String) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(icon, contentDescription = null, tint = TealPrimary, modifier = Modifier.size(18.dp))
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(title, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-    }
-}
-
-/**
- * Label on the left in a fixed-width column, value on the right in its own
- * column. The value wraps onto multiple lines and grows vertically as needed
- * instead of ever touching or overlapping the label — this is what keeps a
- * long address contained and readable regardless of its length.
- */
-@Composable
-private fun LabeledDetailRow(label: String, value: String) {
-    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
-        Text(
-            text = label,
-            fontSize = 12.sp,
-            color = TextSecondary,
-            modifier = Modifier.width(96.dp)
-        )
-        Text(
-            text = value,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium,
-            color = TextPrimary,
-            textAlign = TextAlign.End,
-            modifier = Modifier.weight(1f)
         )
     }
 }
@@ -330,13 +250,24 @@ private fun LabeledDetailRow(label: String, value: String) {
 private fun SettingsPanel(
     visible: Boolean,
     onDismiss: () -> Unit,
-    onLogout: () -> Unit,
-    onDeactivateAccount: () -> Unit,
-    onDeleteAccount: () -> Unit,
+    accountViewModel: AccountActionViewModel?,
+    onAccountCleared: () -> Unit,
     onContactSupport: () -> Unit
 ) {
-    // Wrapped in a Box so `Modifier.align(...)` below has a BoxScope to resolve against,
-    // and so the scrim + sliding panel are layered on top of each other correctly.
+    var showLogoutDialog by remember { mutableStateOf(false) }
+    var showDeactivateDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    val uiState by accountViewModel?.uiState?.collectAsState()
+        ?: remember { mutableStateOf(AccountActionUiState()) }
+
+    LaunchedEffect(uiState.actionCompleted) {
+        if (uiState.actionCompleted) {
+            onAccountCleared()
+            accountViewModel?.resetState()
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         AnimatedVisibility(
             visible = visible,
@@ -395,10 +326,33 @@ private fun SettingsPanel(
                     }
                 }
 
+                if (uiState.errorMessage != null) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(uiState.errorMessage ?: "", color = SosRed, fontSize = 12.sp)
+                }
+
                 Spacer(modifier = Modifier.height(20.dp))
-                SettingsRow(icon = Icons.AutoMirrored.Filled.Logout, label = "Logout", subtitle = "Sign out from your account", tint = TealPrimary, onClick = onLogout)
-                SettingsRow(icon = Icons.Filled.PauseCircle, label = "Deactivate Account", subtitle = "Temporarily deactivate your account", tint = WarningAmber, onClick = onDeactivateAccount)
-                SettingsRow(icon = Icons.Filled.DeleteForever, label = "Delete Account", subtitle = "Permanently delete your account and all data", tint = SosRed, onClick = onDeleteAccount)
+                SettingsRow(
+                    icon = Icons.AutoMirrored.Filled.Logout,
+                    label = if (uiState.activeAction == AccountAction.LOGOUT) "Please wait..." else "Logout",
+                    subtitle = "Sign out from your account",
+                    tint = TealPrimary,
+                    onClick = { if (!uiState.isLoading) showLogoutDialog = true }
+                )
+                SettingsRow(
+                    icon = Icons.Filled.PauseCircle,
+                    label = if (uiState.activeAction == AccountAction.DEACTIVATE) "Please wait..." else "Deactivate Account",
+                    subtitle = "Temporarily deactivate your account",
+                    tint = WarningAmber,
+                    onClick = { if (!uiState.isLoading) showDeactivateDialog = true }
+                )
+                SettingsRow(
+                    icon = Icons.Filled.DeleteForever,
+                    label = if (uiState.activeAction == AccountAction.DELETE) "Please wait..." else "Delete Account",
+                    subtitle = "Permanently delete your account and all data",
+                    tint = SosRed,
+                    onClick = { if (!uiState.isLoading) showDeleteDialog = true }
+                )
 
                 Spacer(modifier = Modifier.height(22.dp))
                 Text("Our Commitment", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
@@ -419,6 +373,112 @@ private fun SettingsPanel(
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
+    }
+
+    // ---- Logout confirmation ----
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            title = { Text("Logout") },
+            text = { Text("Are you sure you want to logout?", fontSize = 13.sp, color = TextSecondary) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showLogoutDialog = false
+                    accountViewModel?.logout()
+                }) { Text("Logout", color = TealPrimary) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutDialog = false }) { Text("Cancel") }
+            }
+        )
+    }
+
+    // ---- Deactivate: requires password ----
+    if (showDeactivateDialog) {
+        var password by remember { mutableStateOf("") }
+        var passwordVisible by remember { mutableStateOf(false) }
+        AlertDialog(
+            onDismissRequest = { showDeactivateDialog = false },
+            title = { Text("Deactivate Account") },
+            text = {
+                Column {
+                    Text("Enter your password to confirm. You'll be logged out on all devices.", fontSize = 13.sp, color = TextSecondary)
+                    Spacer(modifier = Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        label = { Text("Password") },
+                        singleLine = true,
+                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                Icon(
+                                    imageVector = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                                    contentDescription = if (passwordVisible) "Hide password" else "Show password",
+                                    tint = TextSecondary
+                                )
+                            }
+                        }
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = password.isNotBlank(),
+                    onClick = {
+                        showDeactivateDialog = false
+                        accountViewModel?.deactivateAccount(password)
+                    }
+                ) { Text("Deactivate", color = WarningAmber) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeactivateDialog = false }) { Text("Cancel") }
+            }
+        )
+    }
+
+    // ---- Delete: requires password ----
+    if (showDeleteDialog) {
+        var password by remember { mutableStateOf("") }
+        var passwordVisible by remember { mutableStateOf(false) }
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Delete Account") },
+            text = {
+                Column {
+                    Text("This permanently deletes your account and all data. This cannot be undone.", fontSize = 13.sp, color = TextSecondary)
+                    Spacer(modifier = Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        label = { Text("Password") },
+                        singleLine = true,
+                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                Icon(
+                                    imageVector = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                                    contentDescription = if (passwordVisible) "Hide password" else "Show password",
+                                    tint = TextSecondary
+                                )
+                            }
+                        }
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = password.isNotBlank(),
+                    onClick = {
+                        showDeleteDialog = false
+                        accountViewModel?.deleteAccount(password)
+                    }
+                ) { Text("Delete Forever", color = SosRed) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
+            }
+        )
     }
 }
 
