@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -257,7 +258,10 @@ private fun BookingCard(
     tertiaryActionLabel: String? = null,
     onTertiaryAction: () -> Unit = {}
 ) {
-    SectionCard {
+    // Same subtle 1dp shadow used for cards on the Home and Job Requests screens.
+    SectionCard(
+        modifier = Modifier.shadow(elevation = 1.dp, shape = RoundedCornerShape(16.dp), clip = false)
+    ) {
         Row(verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth()) {
             ServiceIconBadge(icon = booking.service.icon)
             Spacer(modifier = Modifier.width(12.dp))
@@ -275,32 +279,37 @@ private fun BookingCard(
             InfoChip(text = booking.duration)
         }
         Spacer(modifier = Modifier.height(12.dp))
+        // All actions (Chat / View Details / Cancel) now share a single row instead of
+        // stacking the tertiary action on its own row below.
         Row(modifier = Modifier.fillMaxWidth()) {
             OutlinedButton(
                 onClick = onPrimaryAction,
                 modifier = Modifier.weight(1f),
+                contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
                 shape = RoundedCornerShape(10.dp),
                 border = androidx.compose.foundation.BorderStroke(1.dp, BorderGray),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = TextPrimary)
-            ) { Text(primaryActionLabel, fontSize = 12.sp) }
+            ) { Text(primaryActionLabel, fontSize = 12.sp, maxLines = 1) }
             Spacer(modifier = Modifier.width(8.dp))
             OutlinedButton(
                 onClick = onSecondaryAction,
                 modifier = Modifier.weight(1f),
+                contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
                 shape = RoundedCornerShape(10.dp),
                 border = androidx.compose.foundation.BorderStroke(1.dp, TealPrimary),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = TealPrimary)
-            ) { Text(secondaryActionLabel, fontSize = 12.sp) }
-        }
-        if (tertiaryActionLabel != null) {
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedButton(
-                onClick = onTertiaryAction,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(10.dp),
-                border = androidx.compose.foundation.BorderStroke(1.dp, SosRed),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = SosRed)
-            ) { Text(tertiaryActionLabel, fontSize = 12.sp) }
+            ) { Text(secondaryActionLabel, fontSize = 12.sp, maxLines = 1) }
+            if (tertiaryActionLabel != null) {
+                Spacer(modifier = Modifier.width(8.dp))
+                OutlinedButton(
+                    onClick = onTertiaryAction,
+                    modifier = Modifier.weight(1f),
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, SosRed),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = SosRed)
+                ) { Text(tertiaryActionLabel, fontSize = 12.sp, maxLines = 1) }
+            }
         }
     }
 }

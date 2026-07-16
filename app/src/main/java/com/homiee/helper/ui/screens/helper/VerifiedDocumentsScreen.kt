@@ -42,7 +42,6 @@ fun VerifiedDocumentsScreen(onBackClick: () -> Unit, onOpenDocument: (String) ->
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .windowInsetsPadding(WindowInsets.statusBars)
                 .padding(horizontal = 20.dp)
         ) {
             DetailTopBar(title = "Verified Documents", onBackClick = onBackClick)

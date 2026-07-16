@@ -79,26 +79,6 @@ fun MessagesScreen(
                 }
             }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 14.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(TealPale)
-                    .padding(horizontal = 14.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(Icons.Filled.Search, contentDescription = null, tint = HintGray, modifier = Modifier.size(20.dp))
-                Spacer(modifier = Modifier.width(8.dp))
-                Box(modifier = Modifier.weight(1f)) {
-                    if (searchQuery.isEmpty()) {
-                        Text("Search messages...", fontSize = 13.sp, color = HintGray)
-                    }
-                    BasicTextFieldSingleLine(value = searchQuery, onValueChange = { searchQuery = it })
-                }
-                Icon(Icons.Filled.Tune, contentDescription = null, tint = TealPrimary, modifier = Modifier.size(18.dp))
-            }
-
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(horizontal = 20.dp)

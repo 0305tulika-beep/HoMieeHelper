@@ -1,7 +1,10 @@
 package com.homiee.helper.ui.navigation
 
+import android.app.Activity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -9,6 +12,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.homiee.helper.data.local.OnboardingProgressStore
+import com.homiee.helper.data.local.TokenManager
 import com.homiee.helper.ui.components.HelperNavItem
 
 // ---- Auth screens ----
@@ -38,12 +43,10 @@ import com.homiee.helper.ui.screens.helper.ProfileScreen
 import com.homiee.helper.ui.screens.helper.RequestDetailsScreen
 import com.homiee.helper.ui.screens.helper.TotalEarningsScreen
 import com.homiee.helper.ui.screens.helper.VerifiedDocumentsScreen
+import com.homiee.helper.viewmodel.AccountActionViewModel
 
 @Composable
 fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
-    // Shared bottom-nav click handler for Home / Job Requests / My Jobs / Messages / Profile.
-    // "Single top + restore state" so switching tabs doesn't pile up the back stack and each
-    // tab keeps its own scroll/tab-selection state.
     val onBottomNavClick: (HelperNavItem) -> Unit = { item ->
         navController.navigate(item.route) {
             popUpTo(Screen.Home.route) { saveState = true }
@@ -55,7 +58,6 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
     NavHost(
         navController = navController,
         startDestination = Screen.Splash.route,
-        // Quick fade transitions applied once here, inherited by every screen below.
         enterTransition = quickEnterTransition,
         exitTransition = quickExitTransition,
         popEnterTransition = quickPopEnterTransition,
@@ -65,12 +67,19 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
         // ================= AUTH FLOW =================
 
         composable(Screen.Splash.route) {
+            val context = LocalContext.current
             SplashScreen(
                 onFinished = {
-                    // Flow starts at Sign Up, not Login. Splash is cleared from the
-                    // stack so pressing back on SignUp closes the app instead of
-                    // returning to Splash.
-                    navController.navigate(Screen.SignUp.route) {
+                    val tokenManager = TokenManager.getInstance(context)
+                    val destination = when {
+                        !tokenManager.isLoggedIn() -> Screen.SignUp.route
+                        // TODO: resume from the exact step (OnboardingProgressStore.getCurrentStep)
+                        // once each form screen persists + restores its own field state.
+                        // For now, restart always re-enters onboarding at step 1.
+                        !tokenManager.isOnboardingComplete() -> Screen.PersonalInformation.route
+                        else -> Screen.Home.route
+                    }
+                    navController.navigate(destination) {
                         popUpTo(Screen.Splash.route) { inclusive = true }
                     }
                 }
@@ -80,26 +89,17 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
         composable(Screen.Login.route) {
             LoginScreen(
                 onLoginClick = {
-                    // CHANGED: a successful login is an existing, already-
-                    // onboarded helper — send them straight to the dashboard,
-                    // not back through the onboarding form flow. The whole
-                    // auth stack is cleared behind them either way.
                     navController.navigate(Screen.Home.route) {
                         popUpTo(0) { inclusive = true }
                     }
                 },
                 onGoogleLoginClick = {
-                    // TODO: Google sign-in isn't wired to a real account yet,
-                    // so this still can't tell if the Google user is a
-                    // returning helper — leaving it on the onboarding path
-                    // until that's sorted out.
                     navController.navigate(Screen.PersonalInformation.route) {
                         popUpTo(0) { inclusive = true }
                     }
                 },
                 onForgotPasswordClick = { navController.navigate(Screen.ForgotPassword.route) },
                 onSignUpClick = {
-                    // Plain push - back from SignUp returns to Login.
                     navController.navigate(Screen.SignUp.route)
                 }
             )
@@ -111,7 +111,6 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
                 onSignUpClick = { email -> navController.navigate(Screen.Otp.createRoute(email)) },
                 onGoogleSignUpClick = { /* TODO: wire up Google sign-up */ },
                 onLoginClick = {
-                    // Plain push - back from Login returns to SignUp.
                     navController.navigate(Screen.Login.route)
                 }
             )
@@ -126,8 +125,8 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
                 email = email,
                 onBackClick = { navController.popBackStack() },
                 onVerifyClick = {
-                    // After verifying, send the new user into the profile-setup form flow,
-                    // clearing the whole auth stack behind them.
+                    // Clears the ENTIRE stack (Splash, SignUp, Otp) — PersonalInformation
+                    // becomes the sole entry, so there's nothing left to back into.
                     navController.navigate(Screen.PersonalInformation.route) {
                         popUpTo(0) { inclusive = true }
                     }
@@ -156,8 +155,11 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
         // ================= ONBOARDING / FORM FLOW (Steps 1-6) =================
 
         composable(Screen.PersonalInformation.route) {
+            val activity = LocalContext.current as? Activity
             PersonalInformationScreen(
-                onBack = { navController.popBackStack() },
+                // First form screen: stack was cleared via popUpTo(0) on the way here,
+                // so there's nothing to pop back into — close the app instead.
+                onBack = { activity?.finish() },
                 onContinue = { navController.navigate(Screen.AddressInformation.route) }
             )
         }
@@ -194,20 +196,19 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
         }
 
         composable(Screen.Availability.route) {
+            val context = LocalContext.current
+            val finishOnboarding: () -> Unit = {
+                TokenManager.getInstance(context).setOnboardingComplete(true)
+                OnboardingProgressStore.clear(context) // no-op for now, reserved for future step-resume
+                // Onboarding fully done — clears the whole form stack behind the user.
+                navController.navigate(Screen.Home.route) {
+                    popUpTo(0) { inclusive = true }
+                }
+            }
             AvailabilityScreen(
                 onBack = { navController.popBackStack() },
-                onSkip = {
-                    // Onboarding finished (skipped last step) - drop into the dashboard.
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(0) { inclusive = true }
-                    }
-                },
-                onContinue = {
-                    // Onboarding finished - drop into the dashboard.
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(0) { inclusive = true }
-                    }
-                }
+                onSkip = finishOnboarding,
+                onContinue = finishOnboarding
             )
         }
 
@@ -301,17 +302,22 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
         }
 
         composable(Screen.Profile.route) {
+            val context = LocalContext.current
             val currentRoute by navController.currentBackStackEntryAsState()
+            val accountViewModel: AccountActionViewModel =
+                viewModel(factory = AccountActionViewModel.Factory(context))
+
+            val goToLoginCleared: () -> Unit = {
+                navController.navigate(Screen.Login.route) {
+                    popUpTo(0) { inclusive = true }
+                }
+            }
+
             ProfileScreen(
                 onViewVerifiedDocuments = { navController.navigate(Screen.VerifiedDocuments.route) },
                 onViewTotalEarnings = { navController.navigate(Screen.TotalEarnings.route) },
-                onLogout = {
-                    navController.navigate(Screen.Login.route) {
-                        popUpTo(0) { inclusive = true }
-                    }
-                },
-                onDeactivateAccount = { /* TODO: deactivate account */ },
-                onDeleteAccount = { /* TODO: delete account */ },
+                accountViewModel = accountViewModel,
+                onAccountCleared = goToLoginCleared,
                 onContactSupport = { /* TODO: contact support */ },
                 currentRoute = currentRoute?.destination?.route,
                 onNavItemClick = onBottomNavClick

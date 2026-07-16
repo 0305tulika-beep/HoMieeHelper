@@ -38,7 +38,6 @@ fun TotalEarningsScreen(onBackClick: () -> Unit, onViewAllTransactions: () -> Un
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .windowInsetsPadding(WindowInsets.statusBars)
                 .padding(horizontal = 20.dp)
         ) {
             DetailTopBar(title = "Total Earnings", onBackClick = onBackClick)

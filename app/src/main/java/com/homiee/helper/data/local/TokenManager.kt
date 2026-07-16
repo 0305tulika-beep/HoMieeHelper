@@ -7,6 +7,8 @@ import androidx.security.crypto.MasterKey
 
 class TokenManager private constructor(context: Context) {
 
+    private val appContext = context.applicationContext
+
     private val masterKey = MasterKey.Builder(context)
         .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
         .build()
@@ -52,6 +54,12 @@ class TokenManager private constructor(context: Context) {
 
     fun isLoggedIn(): Boolean = getAccessToken() != null
 
+    fun setOnboardingComplete(complete: Boolean) {
+        prefs.edit().putBoolean(KEY_ONBOARDING_COMPLETE, complete).apply()
+    }
+
+    fun isOnboardingComplete(): Boolean = prefs.getBoolean(KEY_ONBOARDING_COMPLETE, false)
+
     fun clearSession() {
         prefs.edit()
             .remove(KEY_ACCESS)
@@ -61,6 +69,7 @@ class TokenManager private constructor(context: Context) {
 
     fun clearAll() {
         prefs.edit().clear().apply()
+        OnboardingProgressStore.clear(appContext)
     }
 
     companion object {
@@ -72,6 +81,7 @@ class TokenManager private constructor(context: Context) {
         private const val KEY_LNAME = "user_lname"
         private const val KEY_EMAIL = "user_email"
         private const val KEY_USERNAME = "user_username"
+        private const val KEY_ONBOARDING_COMPLETE = "onboarding_complete"
 
         @Volatile private var INSTANCE: TokenManager? = null
 

@@ -5,19 +5,22 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.homiee.helper.ui.components.*
 import com.homiee.helper.ui.theme.*
+
+/** Same subtle 1dp shadow used on Home / Job Requests / My Jobs / Profile / Request Details cards. */
+private val cardElevation = Modifier.shadow(elevation = 1.dp, shape = RoundedCornerShape(16.dp), clip = false)
 
 @Composable
 fun JobDetailsScreen(
@@ -34,7 +37,6 @@ fun JobDetailsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .windowInsetsPadding(WindowInsets.statusBars)
                 .padding(horizontal = 20.dp)
         ) {
             DetailTopBar(
@@ -62,7 +64,7 @@ fun JobDetailsScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 Text("Booking Details", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                 Spacer(modifier = Modifier.height(10.dp))
-                SectionCard {
+                SectionCard(modifier = cardElevation) {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                         ServiceIconBadge(icon = booking.service.icon, size = 48.dp)
                         Spacer(modifier = Modifier.width(12.dp))
@@ -90,7 +92,7 @@ fun JobDetailsScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 Text("Resident Information", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                 Spacer(modifier = Modifier.height(10.dp))
-                SectionCard {
+                SectionCard(modifier = cardElevation) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         InitialsAvatar(initials = booking.residentInitials, size = 48.dp)
                         Spacer(modifier = Modifier.width(12.dp))
@@ -117,7 +119,7 @@ fun JobDetailsScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                     Text("Payment Information", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                     Spacer(modifier = Modifier.height(10.dp))
-                    SectionCard {
+                    SectionCard(modifier = cardElevation) {
                         InfoRow("Total Amount", booking.salary)
                         Row(
                             modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
@@ -135,29 +137,16 @@ fun JobDetailsScreen(
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    OutlinedButton(
-                        onClick = { onChatWithResident(booking.id) },
-                        modifier = Modifier.weight(1f).height(52.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, TealPrimary),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = TealPrimary)
-                    ) {
-                        Icon(Icons.Filled.Chat, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Chat with Resident", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Button(
-                        onClick = { onCallResident(booking.id) },
-                        modifier = Modifier.weight(1f).height(52.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = TealPrimary)
-                    ) {
-                        Icon(Icons.Filled.Call, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Call Resident", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
-                    }
+                OutlinedButton(
+                    onClick = { onChatWithResident(booking.id) },
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, TealPrimary),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = TealPrimary)
+                ) {
+                    Icon(Icons.Filled.Chat, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Chat with Resident", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                 }
                 Spacer(modifier = Modifier.height(24.dp))
             }

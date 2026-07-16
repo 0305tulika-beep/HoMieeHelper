@@ -4,11 +4,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.MoreVert
@@ -16,6 +18,7 @@ import androidx.compose.material.icons.filled.SentimentSatisfied
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,6 +29,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.homiee.helper.ui.components.*
@@ -41,9 +45,26 @@ fun ChatScreen(
     val chat = HelperSampleData.chatById(conversationId)
     var draft by remember { mutableStateOf("") }
     val messages = remember { HelperSampleData.messagesFor(conversationId).toMutableStateList() }
+    val listState = rememberLazyListState()
+
+    fun sendMessage() {
+        if (draft.isNotBlank()) {
+            messages.add(ChatMessage(draft, "Now", isMe = true))
+            draft = ""
+        }
+    }
+
+    // Keep the latest message in view as new ones come in.
+    LaunchedEffect(messages.size) {
+        if (messages.isNotEmpty()) listState.animateScrollToItem(messages.lastIndex)
+    }
 
     Scaffold(containerColor = BackgroundWhite) { innerPadding ->
-        Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+        // Only the bottom inset is consumed here — the header below extends behind the
+        // status bar itself and applies its own top inset, so it isn't reserved twice
+        // (that double reservation was what left a plain white strip above the teal
+        // header before).
+        Column(modifier = Modifier.fillMaxSize().padding(bottom = innerPadding.calculateBottomPadding())) {
             // Header
             Row(
                 modifier = Modifier
@@ -75,23 +96,8 @@ fun ChatScreen(
                 }
             }
 
-            // Booking context banner
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(InfoCardBg)
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(chat?.service ?: "", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
-                    Text(chat?.date ?: "", fontSize = 11.sp, color = TextSecondary)
-                }
-                StatusChip(text = "Upcoming", background = SuccessGreenBg, textColor = SuccessGreen)
-            }
-
             LazyColumn(
+                state = listState,
                 modifier = Modifier.weight(1f).fillMaxWidth(),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -107,7 +113,8 @@ fun ChatScreen(
                 }
             }
 
-            // Composer
+            // Composer — plus/attach icon removed, text field now leads straight into
+            // the send button.
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -115,16 +122,6 @@ fun ChatScreen(
                     .padding(horizontal = 12.dp, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(CircleShape)
-                        .background(TealPrimary),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(Icons.Filled.Add, contentDescription = "Attach", tint = Color.White, modifier = Modifier.size(20.dp))
-                }
-                Spacer(modifier = Modifier.width(8.dp))
                 Row(
                     modifier = Modifier
                         .weight(1f)
@@ -141,27 +138,22 @@ fun ChatScreen(
                             value = draft,
                             onValueChange = { draft = it },
                             singleLine = true,
-                            textStyle = TextStyle(fontSize = 13.sp, color = TextPrimary)
+                            textStyle = TextStyle(fontSize = 13.sp, color = TextPrimary),
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                            keyboardActions = KeyboardActions(onSend = { sendMessage() })
                         )
                     }
                     Icon(Icons.Filled.SentimentSatisfied, contentDescription = null, tint = HintGray, modifier = Modifier.size(18.dp))
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                Box(
+                IconButton(
+                    onClick = { sendMessage() },
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(TealPrimary),
-                    contentAlignment = Alignment.Center
+                        .background(if (draft.isNotBlank()) TealPrimary else TealPrimary.copy(alpha = 0.5f))
                 ) {
-                    IconButton(onClick = {
-                        if (draft.isNotBlank()) {
-                            messages.add(ChatMessage(draft, "Now", isMe = true))
-                            draft = ""
-                        }
-                    }) {
-                        Icon(Icons.Filled.Send, contentDescription = "Send", tint = Color.White, modifier = Modifier.size(18.dp))
-                    }
+                    Icon(Icons.Filled.Send, contentDescription = "Send", tint = Color.White, modifier = Modifier.size(18.dp))
                 }
             }
         }

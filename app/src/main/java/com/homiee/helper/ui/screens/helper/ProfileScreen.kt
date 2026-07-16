@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -27,9 +28,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.homiee.helper.ui.components.*
@@ -53,6 +57,9 @@ private data class HelperProfile(
 
 private data class ServiceCharge(val label: String, val price: String)
 
+/** Consistent 1dp shadow used across Home / Job Requests / My Jobs — applied here too. */
+private val cardElevation = Modifier.shadow(elevation = 1.dp, shape = RoundedCornerShape(16.dp), clip = false)
+
 @Composable
 fun ProfileScreen(
     onViewVerifiedDocuments: () -> Unit,
@@ -61,6 +68,7 @@ fun ProfileScreen(
     onDeactivateAccount: () -> Unit,
     onDeleteAccount: () -> Unit,
     onContactSupport: () -> Unit,
+    onEditProfilePhoto: () -> Unit = {},
     currentRoute: String? = null,
     onNavItemClick: (HelperNavItem) -> Unit = {}
 ) {
@@ -111,10 +119,33 @@ fun ProfileScreen(
                 ) {
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Identity card
-                    SectionCard {
+                    // Identity card — avatar now has a small edit/camera badge on it,
+                    // matching the reference. Actually swapping the photo needs an image
+                    // picker + upload flow, so onEditProfilePhoto is just wired as a stub
+                    // for now.
+                    // TODO: hook onEditProfilePhoto up to an image picker + upload to backend.
+                    SectionCard(modifier = cardElevation) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            InitialsAvatar(initials = profile.initials, size = 64.dp)
+                            Box {
+                                InitialsAvatar(initials = profile.initials, size = 64.dp)
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.BottomEnd)
+                                        .size(22.dp)
+                                        .clip(CircleShape)
+                                        .background(Color.White)
+                                        .border(1.dp, BorderGray, CircleShape)
+                                        .clickable { onEditProfilePhoto() },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        Icons.Filled.CameraAlt,
+                                        contentDescription = "Edit profile photo",
+                                        tint = TealPrimary,
+                                        modifier = Modifier.size(12.dp)
+                                    )
+                                }
+                            }
                             Spacer(modifier = Modifier.width(14.dp))
                             Column {
                                 Text(profile.name, fontSize = 17.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
@@ -128,38 +159,55 @@ fun ProfileScreen(
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
-                    SectionCard {
-                        Text("About Me", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                    SectionCard(modifier = cardElevation) {
+                        SectionHeader(icon = Icons.Filled.Person, title = "About Me")
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(profile.about, fontSize = 12.sp, color = TextSecondary, lineHeight = 17.sp)
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
-                    SectionCard {
-                        Text("Personal Information", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-                        Spacer(modifier = Modifier.height(6.dp))
-                        InfoRow("Date of Birth", profile.dob)
-                        InfoRow("Address", profile.address)
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            "View Verified Documents",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = TealPrimary,
-                            modifier = Modifier.clickable { onViewVerifiedDocuments() }
-                        )
+                    SectionCard(modifier = cardElevation) {
+                        SectionHeader(icon = Icons.Filled.Badge, title = "Personal Information")
+                        Spacer(modifier = Modifier.height(10.dp))
+                        LabeledDetailRow(label = "Date of Birth", value = profile.dob)
+                        Spacer(modifier = Modifier.height(10.dp))
+                        // Address gets its own row: label stays put on the left, the value
+                        // sits in a fixed column to the right and grows downward (wraps
+                        // onto as many lines as it needs) instead of squeezing sideways
+                        // into — or overlapping — the "Address" label.
+                        LabeledDetailRow(label = "Address", value = profile.address)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        // Elaborated into a full tappable row (icon + title + short
+                        // description + chevron) instead of a bare text link.
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(TealPale)
+                                .clickable { onViewVerifiedDocuments() }
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Filled.VerifiedUser, contentDescription = null, tint = TealPrimary, modifier = Modifier.size(20.dp))
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("View Verified Documents", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+                                Text("Aadhaar, PAN, police verification & more", fontSize = 11.sp, color = TextSecondary)
+                            }
+                            Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = TealPrimary)
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
-                    SectionCard {
-                        Text("Services & Charges", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                    SectionCard(modifier = cardElevation) {
+                        SectionHeader(icon = Icons.Filled.Payments, title = "Services & Charges")
                         Spacer(modifier = Modifier.height(6.dp))
                         services.forEach { InfoRow(it.label, it.price) }
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
-                    SectionCard {
-                        Text("Languages Spoken", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                    SectionCard(modifier = cardElevation) {
+                        SectionHeader(icon = Icons.Filled.Translate, title = "Languages Spoken")
                         Spacer(modifier = Modifier.height(10.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             profile.languages.forEach { lang ->
@@ -171,15 +219,15 @@ fun ProfileScreen(
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
-                    SectionCard {
-                        Text("Experience", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                    SectionCard(modifier = cardElevation) {
+                        SectionHeader(icon = Icons.Filled.WorkHistory, title = "Experience")
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(profile.experience, fontSize = 13.sp, color = TextSecondary)
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
-                    SectionCard {
-                        Text("Working Days", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                    SectionCard(modifier = cardElevation) {
+                        SectionHeader(icon = Icons.Filled.CalendarMonth, title = "Working Days")
                         Spacer(modifier = Modifier.height(10.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             profile.allDays.forEach { day ->
@@ -204,6 +252,7 @@ fun ProfileScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .then(cardElevation)
                             .clip(RoundedCornerShape(16.dp))
                             .background(Color.White)
                             .clickable { onViewTotalEarnings() }
@@ -237,6 +286,42 @@ fun ProfileScreen(
             onDeactivateAccount = onDeactivateAccount,
             onDeleteAccount = onDeleteAccount,
             onContactSupport = onContactSupport
+        )
+    }
+}
+
+/** Small icon + bold title used at the top of every profile section card. */
+@Composable
+private fun SectionHeader(icon: ImageVector, title: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(icon, contentDescription = null, tint = TealPrimary, modifier = Modifier.size(18.dp))
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(title, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+    }
+}
+
+/**
+ * Label on the left in a fixed-width column, value on the right in its own
+ * column. The value wraps onto multiple lines and grows vertically as needed
+ * instead of ever touching or overlapping the label — this is what keeps a
+ * long address contained and readable regardless of its length.
+ */
+@Composable
+private fun LabeledDetailRow(label: String, value: String) {
+    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
+        Text(
+            text = label,
+            fontSize = 12.sp,
+            color = TextSecondary,
+            modifier = Modifier.width(96.dp)
+        )
+        Text(
+            text = value,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium,
+            color = TextPrimary,
+            textAlign = TextAlign.End,
+            modifier = Modifier.weight(1f)
         )
     }
 }

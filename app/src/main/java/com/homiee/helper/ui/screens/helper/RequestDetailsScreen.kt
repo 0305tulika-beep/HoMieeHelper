@@ -11,12 +11,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.homiee.helper.ui.components.*
 import com.homiee.helper.ui.theme.*
+
+/** Same subtle 1dp shadow used on Home / Job Requests / My Jobs / Profile cards. */
+private val cardElevation = Modifier.shadow(elevation = 1.dp, shape = RoundedCornerShape(16.dp), clip = false)
 
 @Composable
 fun RequestDetailsScreen(
@@ -33,7 +37,6 @@ fun RequestDetailsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .windowInsetsPadding(WindowInsets.statusBars)
                 .padding(horizontal = 20.dp)
         ) {
             DetailTopBar(
@@ -60,7 +63,7 @@ fun RequestDetailsScreen(
             ) {
                 Spacer(modifier = Modifier.height(8.dp))
 
-                SectionCard {
+                SectionCard(modifier = cardElevation) {
                     Row(verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth()) {
                         ServiceIconBadge(icon = request.service.icon, size = 48.dp)
                         Spacer(modifier = Modifier.width(12.dp))
@@ -79,7 +82,7 @@ fun RequestDetailsScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 Text("Resident Information", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                 Spacer(modifier = Modifier.height(10.dp))
-                SectionCard {
+                SectionCard(modifier = cardElevation) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         InitialsAvatar(initials = request.residentInitials, size = 48.dp)
                         Spacer(modifier = Modifier.width(12.dp))
@@ -98,7 +101,7 @@ fun RequestDetailsScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 Text("Job Details", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                 Spacer(modifier = Modifier.height(10.dp))
-                SectionCard {
+                SectionCard(modifier = cardElevation) {
                     InfoRow("Service Type", request.service.label)
                     InfoRow("Date", request.date)
                     InfoRow("Time", request.time)

@@ -1,10 +1,34 @@
 [
     {
-        "merged": "com.homiee.helper.app-debug-65:/xml_network_security_config.xml.flat",
-        "source": "com.homiee.helper.app-main-67:/xml/network_security_config.xml"
+        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-65:\\drawable_flashbg.png.flat",
+        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-67:\\drawable\\flashbg.png"
     },
     {
-        "merged": "com.homiee.helper.app-debug-65:/drawable_img.png.flat",
-        "source": "com.homiee.helper.app-main-67:/drawable/img.png"
+        "merged": "com.homiee.helper.app-debug-65:/drawable_header.png.flat",
+        "source": "com.homiee.helper.app-main-67:/drawable/header.png"
+    },
+    {
+        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-65:\\drawable_img.png.flat",
+        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-67:\\drawable\\img.png"
+    },
+    {
+        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-65:\\drawable_logotext.png.flat",
+        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-67:\\drawable\\logotext.png"
+    },
+    {
+        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-65:\\drawable_logotext1.png.flat",
+        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-67:\\drawable\\logotext1.png"
+    },
+    {
+        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-65:\\xml_network_security_config.xml.flat",
+        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-67:\\xml\\network_security_config.xml"
+    },
+    {
+        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-65:\\drawable_homebg.png.flat",
+        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-67:\\drawable\\homebg.png"
+    },
+    {
+        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-65:\\drawable_img_1.png.flat",
+        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-67:\\drawable\\img_1.png"
     }
 ]
