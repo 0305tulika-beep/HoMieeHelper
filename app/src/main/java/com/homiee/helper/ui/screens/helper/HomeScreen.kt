@@ -1,5 +1,10 @@
 package com.homiee.helper.ui.screens.helper
 
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -30,10 +36,19 @@ import com.homiee.helper.R
 import com.homiee.helper.ui.components.*
 import com.homiee.helper.ui.theme.*
 
+/**
+ * Number dialed when the helper taps "Tap to SOS". 112 is India's unified
+ * emergency helpline. Kept as a default parameter on HomeScreen so a
+ * screen/backend-driven number (e.g. a country-specific or platform-configured
+ * helpline) can be passed in instead without touching this file again.
+ */
+private const val DEFAULT_EMERGENCY_HELPLINE = "112"
+
 @Composable
 fun HomeScreen(
     userName: String = "Priya",
     profileCompletionPercent: Int = 60,
+    emergencyHelplineNumber: String = DEFAULT_EMERGENCY_HELPLINE,
     onCompleteProfileClick: () -> Unit = {},
     onViewRequest: (String) -> Unit = {},
     onAcceptRequest: (String) -> Unit = {},
@@ -46,6 +61,7 @@ fun HomeScreen(
 ) {
     DashboardSystemBars(darkStatusBarIcons = false)
     var isOnline by remember { mutableStateOf(true) }
+    val context = LocalContext.current
 
     Scaffold(
         // Transparent so the full-screen background image (below) shows through
@@ -200,7 +216,8 @@ fun HomeScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Emergency SOS - red tinted card.
+                    // Emergency SOS - red tinted card. Tapping the button dials the
+                    // emergency helpline directly (see makePhoneCall below).
                     ElevatedHomeCard(background = SosRedBg) {
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                             Box(
@@ -224,13 +241,16 @@ fun HomeScreen(
                                 )
                             }
                             OutlinedButton(
-                                onClick = onSosClick,
+                                onClick = {
+                                    // Notify the caller (analytics/logging/navigation hook, etc.)...
+                                    onSosClick()
+                                    // ...then actually place the emergency call.
+                                    makePhoneCall(context, emergencyHelplineNumber)
+                                },
                                 shape = RoundedCornerShape(10.dp),
                                 border = androidx.compose.foundation.BorderStroke(1.dp, SosRed),
                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = SosRed)
                             ) {
-                                Icon(Icons.Filled.Sos, contentDescription = null, modifier = Modifier.size(16.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
                                 Text("Tap to SOS", fontSize = 12.sp)
                             }
                         }
@@ -240,6 +260,22 @@ fun HomeScreen(
                 }
             }
         }
+    }
+}
+
+/**
+ * Launches the phone dialer pre-filled with [number]. Uses ACTION_DIAL (not
+ * ACTION_CALL) on purpose: it opens the dialer with the number ready to go but
+ * requires the user to tap the call button themselves, which means the app
+ * does not need the CALL_PHONE runtime permission at all. Falls back to a
+ * Toast if no dialer app is available on the device.
+ */
+private fun makePhoneCall(context: Context, number: String) {
+    try {
+        val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$number"))
+        context.startActivity(intent)
+    } catch (e: ActivityNotFoundException) {
+        Toast.makeText(context, "No dialer app found on this device", Toast.LENGTH_SHORT).show()
     }
 }
 

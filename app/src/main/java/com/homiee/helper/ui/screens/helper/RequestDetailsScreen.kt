@@ -42,11 +42,6 @@ fun RequestDetailsScreen(
             DetailTopBar(
                 title = "Request Details",
                 onBackClick = onBackClick,
-                trailing = {
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Filled.MoreVert, contentDescription = "More", tint = TextPrimary)
-                    }
-                }
             )
 
             if (request == null) {

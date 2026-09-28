@@ -1,5 +1,9 @@
 package com.homiee.helper.ui.screens.helper
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -39,17 +44,25 @@ import com.homiee.helper.ui.theme.*
 fun ChatScreen(
     conversationId: String,
     onBackClick: () -> Unit,
-    onCallClick: (String) -> Unit = {}
+    onCallClick: (String) -> Unit = {},
+    // Phone number to dial when the call icon is tapped. Nullable because the
+    // sample ChatSummary model here doesn't carry a phone number yet — pass the
+    // resident/helper's actual number in from wherever you navigate to this
+    // screen (e.g. from the booking or contact you already have it on). If it's
+    // left null, tapping Call just shows a toast instead of crashing.
+    residentPhoneNumber: String? = null
 ) {
     DashboardSystemBars(darkStatusBarIcons = false)
     val chat = HelperSampleData.chatById(conversationId)
     var draft by remember { mutableStateOf("") }
     val messages = remember { HelperSampleData.messagesFor(conversationId).toMutableStateList() }
     val listState = rememberLazyListState()
+    val context = LocalContext.current
 
     fun sendMessage() {
-        if (draft.isNotBlank()) {
-            messages.add(ChatMessage(draft, "Now", isMe = true))
+        val text = draft.trim()
+        if (text.isNotEmpty()) {
+            messages.add(ChatMessage(text, "Now", isMe = true))
             draft = ""
         }
     }
@@ -88,12 +101,6 @@ fun ChatScreen(
                     Text(chat?.name ?: "Unknown", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.White)
                     Text(chat?.service ?: "", fontSize = 11.sp, color = Color.White.copy(alpha = 0.85f))
                 }
-                IconButton(onClick = { onCallClick(conversationId) }) {
-                    Icon(Icons.Filled.Call, contentDescription = "Call", tint = Color.White, modifier = Modifier.size(20.dp))
-                }
-                IconButton(onClick = {}) {
-                    Icon(Icons.Filled.MoreVert, contentDescription = "More", tint = Color.White)
-                }
             }
 
             LazyColumn(
@@ -114,7 +121,7 @@ fun ChatScreen(
             }
 
             // Composer — plus/attach icon removed, text field now leads straight into
-            // the send button.
+            // the send button. Send is disabled (dimmed) until there's something to send.
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -148,6 +155,7 @@ fun ChatScreen(
                 Spacer(modifier = Modifier.width(8.dp))
                 IconButton(
                     onClick = { sendMessage() },
+                    enabled = draft.isNotBlank(),
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)

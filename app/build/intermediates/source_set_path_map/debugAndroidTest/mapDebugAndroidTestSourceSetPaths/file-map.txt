@@ -1,0 +1,4 @@
+com.homiee.helper.test.app-androidTest-0 C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\build\generated\res\resValues\androidTest\debug
+com.homiee.helper.test.app-mergeDebugAndroidTestResources-1 C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\merged.dir
+com.homiee.helper.test.app-mergeDebugAndroidTestResources-2 C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\stripped.dir
+com.homiee.helper.test.app-debugAndroidTest-3 C:\Users\Tulika Mishra\Downloads\HomieeHelper (1)\HomieeHelper\app\build\intermediates\merged_res\debugAndroidTest\mergeDebugAndroidTestResources

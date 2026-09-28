@@ -11,11 +11,6 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
-/**
- * Call RetrofitClient.init(context) once, e.g. from your Application class's
- * onCreate() (see HomieeHelperApp.kt). Everything below is lazy and reads
- * the stored application context the first time it's actually needed.
- */
 object RetrofitClient {
 
     private const val BASE_URL = "http://13.206.80.56/"
@@ -36,10 +31,6 @@ object RetrofitClient {
         val authInterceptor = Interceptor { chain ->
             val original = chain.request()
             val path = original.url.encodedPath
-
-            // Public auth endpoints never need — and shouldn't send — a Bearer token.
-            // Attaching a stale/expired token to these can trigger a 401 from DRF's
-            // authentication layer before the view's AllowAny permission is checked.
             val isPublicAuthEndpoint = path.contains("/api/auth/login") ||
                     path.contains("/api/auth/register") ||
                     path.contains("/api/auth/resend-otp") ||
@@ -83,4 +74,5 @@ object RetrofitClient {
     }
 
     val authApi: AuthApiService by lazy { retrofit.create(AuthApiService::class.java) }
+    val userDetailsApi: UserDetailsApiService by lazy { retrofit.create(UserDetailsApiService::class.java) }
 }

@@ -1,0 +1,4 @@
+#Thu Jul 16 20:58:19 IST 2026
+base.0=C\:\\Users\\Tulika Mishra\\Downloads\\HomieeHelper (1)\\HomieeHelper\\app\\build\\intermediates\\dex\\debugAndroidTest\\mergeProjectDexDebugAndroidTest\\0\\classes.dex
+path.0=0/classes.dex
+renamed.0=classes.dex

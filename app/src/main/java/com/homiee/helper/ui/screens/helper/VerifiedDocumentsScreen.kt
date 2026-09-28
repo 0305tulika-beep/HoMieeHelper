@@ -69,11 +69,8 @@ fun VerifiedDocumentsScreen(onBackClick: () -> Unit, onOpenDocument: (String) ->
 @Composable
 private fun rememberVerifiedDocs(): List<VerifiedDoc> = androidx.compose.runtime.remember {
     listOf(
-        VerifiedDoc("Government ID (Aadhaar Card)", "Verified on 10 May 2025", Icons.Filled.Badge),
-        VerifiedDoc("PAN Card", "Verified on 10 May 2025", Icons.Filled.CreditCard),
-        VerifiedDoc("Police Verification Certificate", "Verified on 12 May 2025", Icons.Filled.Description),
-        VerifiedDoc("Address Proof", "Verified on 12 May 2025", Icons.Filled.Home),
-        VerifiedDoc("Profile Photo", "Verified on 10 May 2025", Icons.Filled.Person)
+        VerifiedDoc("Government ID", "Verified", Icons.Filled.Badge),
+        VerifiedDoc("Police Verification Certificate", "Verified", Icons.Filled.Description),
     )
 }
 

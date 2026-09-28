@@ -69,6 +69,24 @@ class TokenManager private constructor(context: Context) {
         prefs.edit().clear().apply()
     }
 
+    private fun createEncryptedPrefs(context: Context): SharedPreferences {
+        return try {
+            EncryptedSharedPreferences.create(
+                context, PREFS_NAME, masterKey,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
+        } catch (e: Exception) {
+            // corrupt/invalid keystore key — wipe and recreate
+            context.deleteSharedPreferences(PREFS_NAME)
+            EncryptedSharedPreferences.create(
+                context, PREFS_NAME, masterKey,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
+        }
+    }
+
     companion object {
         private const val PREFS_NAME = "homiee_helper_secure_prefs"
         private const val KEY_ACCESS = "access_token"

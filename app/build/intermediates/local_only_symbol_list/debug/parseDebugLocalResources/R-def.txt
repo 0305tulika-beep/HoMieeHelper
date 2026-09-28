@@ -7,6 +7,10 @@ drawable img
 drawable img_1
 drawable logotext
 drawable logotext1
+mipmap ic_launcher
+mipmap ic_launcher_background
+mipmap ic_launcher_foreground
+mipmap ic_launcher_round
 string app_name
 style Theme.HomieeHelper
 xml network_security_config

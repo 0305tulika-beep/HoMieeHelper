@@ -33,8 +33,7 @@ interface AuthApiService {
     @POST("api/auth/deactivate/")
     suspend fun deactivateAccount(@Body request: DeactivateRequest): Response<GenericResponse>
 
-    // Plain @DELETE doesn't allow a request body in Retrofit — @HTTP with
-    // hasBody = true is required to send one on a DELETE call.
+    // The problem is that Retrofit's normal @DELETE annotation doesn't support a request body in its annotation form.
     @HTTP(method = "DELETE", path = "api/auth/delete/", hasBody = true)
     suspend fun deleteAccount(@Body request: DeactivateRequest): Response<GenericResponse>
 }

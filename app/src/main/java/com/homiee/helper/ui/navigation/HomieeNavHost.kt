@@ -43,6 +43,12 @@ import com.homiee.helper.ui.screens.helper.RequestDetailsScreen
 import com.homiee.helper.ui.screens.helper.TotalEarningsScreen
 import com.homiee.helper.ui.screens.helper.VerifiedDocumentsScreen
 import com.homiee.helper.viewmodel.AccountActionViewModel
+import com.homiee.helper.viewmodel.AddressInformationViewModel
+import com.homiee.helper.viewmodel.AvailabilityViewModel
+import com.homiee.helper.viewmodel.DocumentsViewModel
+import com.homiee.helper.viewmodel.ExperienceAboutViewModel
+import com.homiee.helper.viewmodel.PersonalInformationViewModel
+import com.homiee.helper.viewmodel.ServicesPricingViewModel
 
 @Composable
 fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
@@ -93,7 +99,7 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
                 },
                 onGoogleLoginClick = {
                     // TODO: Google sign-in isn't wired to a real account yet.
-                    navController.navigate(Screen.PersonalInformation.route) {
+                    navController.navigate(Screen.Home.route) {
                         popUpTo(0) { inclusive = true }
                     }
                 },
@@ -155,7 +161,11 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
 
         composable(Screen.PersonalInformation.route) {
             val activity = LocalContext.current as? Activity
+            val context = LocalContext.current
+            val personalInfoViewModel: PersonalInformationViewModel =
+                viewModel(factory = PersonalInformationViewModel.Factory(context))
             PersonalInformationScreen(
+                viewModel = personalInfoViewModel,
                 // First form screen: stack was cleared via popUpTo(0) on the way here,
                 // so there's nothing to pop back into — close the app instead.
                 onBack = { activity?.finish() },
@@ -164,30 +174,44 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
         }
 
         composable(Screen.AddressInformation.route) {
+            val context = LocalContext.current
+            val addressViewModel: AddressInformationViewModel =
+                viewModel(factory = AddressInformationViewModel.Factory(context))
             AddressInformationScreen(
+                viewModel = addressViewModel,
                 onBack = { navController.popBackStack() },
-                onSkip = { navController.navigate(Screen.Documents.route) },
                 onContinue = { navController.navigate(Screen.Documents.route) }
             )
         }
 
         composable(Screen.Documents.route) {
+            val context = LocalContext.current
+            val documentsViewModel: DocumentsViewModel =
+                viewModel(factory = DocumentsViewModel.Factory(context))
             DocumentsScreen(
+                viewModel = documentsViewModel,
                 onBack = { navController.popBackStack() },
-                onSkip = { navController.navigate(Screen.ServicesPricing.route) },
                 onContinue = { navController.navigate(Screen.ServicesPricing.route) }
             )
         }
 
         composable(Screen.ServicesPricing.route) {
+            val context = LocalContext.current
+            val servicesPricingViewModel: ServicesPricingViewModel =
+                viewModel(factory = ServicesPricingViewModel.Factory(context))
             ServicesPricingScreen(
+                viewModel = servicesPricingViewModel,
                 onBack = { navController.popBackStack() },
                 onContinue = { navController.navigate(Screen.ExperienceAbout.route) }
             )
         }
 
         composable(Screen.ExperienceAbout.route) {
+            val context = LocalContext.current
+            val experienceAboutViewModel: ExperienceAboutViewModel =
+                viewModel(factory = ExperienceAboutViewModel.Factory(context))
             ExperienceAboutScreen(
+                viewModel = experienceAboutViewModel,
                 onBack = { navController.popBackStack() },
                 onSkip = { navController.navigate(Screen.Availability.route) },
                 onContinue = { navController.navigate(Screen.Availability.route) }
@@ -196,6 +220,8 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
 
         composable(Screen.Availability.route) {
             val context = LocalContext.current
+            val availabilityViewModel: AvailabilityViewModel =
+                viewModel(factory = AvailabilityViewModel.Factory(context))
             val finishOnboarding: () -> Unit = {
                 TokenManager.getInstance(context).setOnboardingComplete(true)
                 // Onboarding fully done — clears the whole form stack behind the user.
@@ -204,6 +230,7 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
                 }
             }
             AvailabilityScreen(
+                viewModel = availabilityViewModel,
                 onBack = { navController.popBackStack() },
                 onSkip = finishOnboarding,
                 onContinue = finishOnboarding
