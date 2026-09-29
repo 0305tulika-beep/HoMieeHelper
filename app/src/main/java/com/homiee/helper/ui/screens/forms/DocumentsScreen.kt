@@ -30,6 +30,7 @@ fun DocumentsScreen(
 ) {
     var profilePhotoUri by remember { mutableStateOf<Uri?>(null) }
     var policeCertUri by remember { mutableStateOf<Uri?>(null) }
+    var showErrors by remember { mutableStateOf(false) }
 
     val profilePhotoPicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) profilePhotoUri = uri
@@ -38,12 +39,15 @@ fun DocumentsScreen(
         if (uri != null) policeCertUri = uri
     }
 
+    val profilePhotoError = if (profilePhotoUri == null) "Profile photo is required" else null
+    val policeCertError = if (policeCertUri == null) "Police verification certificate is required" else null
+
     FormScaffold(
         title = "Documents",
         step = 3,
         totalSteps = 6,
         onBack = onBack,
-        // No Skip - the backend requires both files before the profile can proceed.
+        // No Skip - both files are mandatory.
         footer = {
             Column {
                 if (viewModel.errorMessage != null) {
@@ -58,7 +62,13 @@ fun DocumentsScreen(
                 PrimaryButton(
                     text = if (viewModel.isLoading) "Saving..." else "Continue",
                     onClick = {
-                        viewModel.submit(profilePhotoUri, policeCertUri, onSuccess = onContinue)
+                        val photo = profilePhotoUri
+                        val cert = policeCertUri
+                        if (photo == null || cert == null) {
+                            showErrors = true
+                        } else {
+                            viewModel.submit(photo, cert, onSuccess = onContinue)
+                        }
                     },
                     enabled = !viewModel.isLoading
                 )
@@ -66,16 +76,33 @@ fun DocumentsScreen(
         }
     ) {
         UploadRow(
-            title = "Upload Profile Photo",
+            title = "Upload Profile Photo *",
             hint = if (profilePhotoUri != null) "Selected ✓" else "Upload a clear profile photo",
             fileTypes = "JPG, PNG • Max 5MB",
             onClick = { profilePhotoPicker.launch("image/*") }
         )
+        if (showErrors && profilePhotoError != null) {
+            Text(
+                text = profilePhotoError,
+                fontSize = 12.sp,
+                color = SosRed,
+                fontWeight = FontWeight.Medium
+            )
+        }
+
         UploadRow(
-            title = "Upload Police Verification Certificate",
+            title = "Upload Police Verification Certificate *",
             hint = if (policeCertUri != null) "Selected ✓" else "Upload certificate",
             fileTypes = "JPG, PNG, PDF • Max 5MB",
             onClick = { policeCertPicker.launch(arrayOf("image/*", "application/pdf")) }
         )
+        if (showErrors && policeCertError != null) {
+            Text(
+                text = policeCertError,
+                fontSize = 12.sp,
+                color = SosRed,
+                fontWeight = FontWeight.Medium
+            )
+        }
     }
 }

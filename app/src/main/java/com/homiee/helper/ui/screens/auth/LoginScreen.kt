@@ -149,9 +149,9 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
         OrDivider()
-
-        Spacer(modifier = Modifier.height(20.dp))
-        GoogleButton(text = "Login with Google", onClick = onGoogleLoginClick)
+//
+//        Spacer(modifier = Modifier.height(20.dp))
+//        GoogleButton(text = "Login with Google", onClick = onGoogleLoginClick)
 
         Spacer(modifier = Modifier.height(20.dp))
         Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {

@@ -26,6 +26,7 @@ private val dayCodeMap = mapOf(
     "Fri" to "fri", "Sat" to "sat", "Sun" to "sun"
 )
 
+// Ordered earliest -> latest, so the list index can be used to compare times.
 private val timeSlots = listOf(
     "6:00 AM", "7:00 AM", "8:00 AM", "9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM",
     "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM", "8:00 PM"
@@ -44,22 +45,51 @@ private fun to24HourSeconds(label: String): String {
 }
 
 @Composable
+private fun ErrorText(message: String) {
+    Text(
+        text = message,
+        fontSize = 12.sp,
+        color = SosRed,
+        fontWeight = FontWeight.Medium
+    )
+}
+
+@Composable
 fun AvailabilityScreen(
     viewModel: AvailabilityViewModel,
     onBack: () -> Unit,
-    onSkip: () -> Unit,
     onContinue: () -> Unit
 ) {
-    val selectedDays = remember { mutableStateListOf("Mon", "Tue", "Wed", "Thu", "Fri") }
+    // No days preselected.
+    val selectedDays = remember { mutableStateListOf<String>() }
     var startTime by remember { mutableStateOf("") }
     var endTime by remember { mutableStateOf("") }
+
+    // Errors only show after the user taps Continue once.
+    var showErrors by remember { mutableStateOf(false) }
+
+    // ---- Time logic ----
+    val startIndex = timeSlots.indexOf(startTime) // -1 if not chosen
+    val endIndex = timeSlots.indexOf(endTime)     // -1 if not chosen
+
+    // Only offer times that keep start strictly before end.
+    val startOptions =
+        if (endIndex >= 0) timeSlots.filterIndexed { i, _ -> i < endIndex } else timeSlots
+    val endOptions =
+        if (startIndex >= 0) timeSlots.filterIndexed { i, _ -> i > startIndex } else timeSlots
+
+    // ---- Validation ----
+    val daysValid = selectedDays.isNotEmpty()
+    val startValid = startIndex >= 0
+    val endValid = endIndex >= 0
+    val orderValid = !startValid || !endValid || startIndex < endIndex
+    val formValid = daysValid && startValid && endValid && orderValid
 
     FormScaffold(
         title = "Availability",
         step = 6,
         totalSteps = 6,
         onBack = onBack,
-        onSkip = onSkip,
         footer = {
             Column {
                 if (viewModel.errorMessage != null) {
@@ -74,6 +104,9 @@ fun AvailabilityScreen(
                 PrimaryButton(
                     text = if (viewModel.isLoading) "Saving..." else "Continue",
                     onClick = {
+                        showErrors = true
+                        if (!formValid) return@PrimaryButton
+
                         viewModel.submit(
                             workingDays = selectedDays.mapNotNull { dayCodeMap[it] },
                             startTime = to24HourSeconds(startTime),
@@ -91,6 +124,9 @@ fun AvailabilityScreen(
             DaySelector(days, selectedDays.toSet()) { day ->
                 if (day in selectedDays) selectedDays.remove(day) else selectedDays.add(day)
             }
+            if (showErrors && !daysValid) {
+                ErrorText("Select at least one working day")
+            }
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -98,12 +134,38 @@ fun AvailabilityScreen(
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     FieldLabel("Start Time")
-                    DropdownField(placeholder = "Select start time", icon = Icons.Filled.AccessTime, options = timeSlots, selected = startTime, onSelect = { startTime = it })
+                    DropdownField(
+                        placeholder = "Select start time",
+                        icon = Icons.Filled.AccessTime,
+                        options = startOptions,
+                        selected = startTime,
+                        onSelect = { picked ->
+                            startTime = picked
+                            // If the chosen end is no longer after the new start, clear it.
+                            val newStart = timeSlots.indexOf(picked)
+                            if (endIndex in 0..newStart) endTime = ""
+                        }
+                    )
+                    if (showErrors && !startValid) {
+                        ErrorText("Select start time")
+                    }
                 }
                 Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     FieldLabel("End Time")
-                    DropdownField(placeholder = "Select end time", icon = Icons.Filled.AccessTime, options = timeSlots, selected = endTime, onSelect = { endTime = it })
+                    DropdownField(
+                        placeholder = "Select end time",
+                        icon = Icons.Filled.AccessTime,
+                        options = endOptions,
+                        selected = endTime,
+                        onSelect = { endTime = it }
+                    )
+                    if (showErrors && !endValid) {
+                        ErrorText("Select end time")
+                    }
                 }
+            }
+            if (showErrors && !orderValid) {
+                ErrorText("Start time must be before end time")
             }
         }
 

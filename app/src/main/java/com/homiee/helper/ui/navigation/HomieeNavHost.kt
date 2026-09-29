@@ -14,6 +14,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.homiee.helper.data.local.TokenManager
 import com.homiee.helper.ui.components.HelperNavItem
+import com.homiee.helper.viewmodel.ProfileViewModel
 
 // ---- Auth screens ----
 import com.homiee.helper.ui.screens.auth.ForgotPasswordScreen
@@ -213,7 +214,6 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
             ExperienceAboutScreen(
                 viewModel = experienceAboutViewModel,
                 onBack = { navController.popBackStack() },
-                onSkip = { navController.navigate(Screen.Availability.route) },
                 onContinue = { navController.navigate(Screen.Availability.route) }
             )
         }
@@ -222,18 +222,16 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
             val context = LocalContext.current
             val availabilityViewModel: AvailabilityViewModel =
                 viewModel(factory = AvailabilityViewModel.Factory(context))
-            val finishOnboarding: () -> Unit = {
-                TokenManager.getInstance(context).setOnboardingComplete(true)
-                // Onboarding fully done — clears the whole form stack behind the user.
-                navController.navigate(Screen.Home.route) {
-                    popUpTo(0) { inclusive = true }
-                }
-            }
             AvailabilityScreen(
                 viewModel = availabilityViewModel,
                 onBack = { navController.popBackStack() },
-                onSkip = finishOnboarding,
-                onContinue = finishOnboarding
+                onContinue = {
+                    TokenManager.getInstance(context).setOnboardingComplete(true)
+                    // Onboarding fully done — clears the whole form stack behind the user.
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
             )
         }
 
@@ -330,6 +328,8 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
             val currentRoute by navController.currentBackStackEntryAsState()
             val accountViewModel: AccountActionViewModel =
                 viewModel(factory = AccountActionViewModel.Factory(context))
+            val profileViewModel: ProfileViewModel =
+                viewModel(factory = ProfileViewModel.Factory(context))
 
             val goToLoginCleared: () -> Unit = {
                 navController.navigate(Screen.Login.route) {
@@ -338,6 +338,7 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
             }
 
             ProfileScreen(
+                profileViewModel = profileViewModel,
                 onViewVerifiedDocuments = { navController.navigate(Screen.VerifiedDocuments.route) },
                 onViewTotalEarnings = { navController.navigate(Screen.TotalEarnings.route) },
                 accountViewModel = accountViewModel,

@@ -27,25 +27,45 @@ private val experienceOptions = listOf(
 private val experienceLabels = experienceOptions.map { it.first }
 
 @Composable
+private fun FieldError(message: String) {
+    Text(
+        text = message,
+        fontSize = 12.sp,
+        color = SosRed,
+        fontWeight = FontWeight.Medium
+    )
+}
+
+@Composable
 fun ExperienceAboutScreen(
     viewModel: ExperienceAboutViewModel,
     onBack: () -> Unit,
-    onSkip: () -> Unit,
     onContinue: () -> Unit
 ) {
     var experience by remember { mutableStateOf("") }
-    // Real backend language ids the user has ticked.
     val selectedLanguageIds = remember { mutableStateListOf<Int>() }
     var otherChecked by remember { mutableStateOf(false) }
     var otherLanguage by remember { mutableStateOf("") }
     var aboutYou by remember { mutableStateOf("") }
+    var showErrors by remember { mutableStateOf(false) }
+
+    val experienceValid = experience.isNotBlank()
+    val otherValid = !otherChecked || otherLanguage.isNotBlank()
+    val languagesValid =
+        (selectedLanguageIds.isNotEmpty() || (otherChecked && otherLanguage.isNotBlank())) && otherValid
+    val aboutValid = aboutYou.isNotBlank()
+    val formValid = experienceValid && languagesValid && aboutValid
+
+    val languageErrorText = when {
+        otherChecked && otherLanguage.isBlank() -> "Please enter the language"
+        else -> "Select at least one language"
+    }
 
     FormScaffold(
         title = "Experience & About You",
         step = 5,
         totalSteps = 6,
         onBack = onBack,
-        onSkip = onSkip,
         footer = {
             Column {
                 if (viewModel.errorMessage != null) {
@@ -60,11 +80,13 @@ fun ExperienceAboutScreen(
                 PrimaryButton(
                     text = if (viewModel.isLoading) "Saving..." else "Continue",
                     onClick = {
-                        val years = experienceOptions.firstOrNull { it.first == experience }?.second ?: 0
-                        // "Other" has no backend id - fold it into the about text so it isn't silently dropped.
+                        showErrors = true
+                        if (!formValid) return@PrimaryButton
+
+                        val years = experienceOptions.first { it.first == experience }.second
                         val about = if (otherChecked && otherLanguage.isNotBlank()) {
-                            "$aboutYou\n\nAlso speaks: $otherLanguage".trim()
-                        } else aboutYou
+                            "${aboutYou.trim()}\n\nAlso speaks: ${otherLanguage.trim()}"
+                        } else aboutYou.trim()
                         viewModel.submit(
                             yearsOfExperience = years,
                             languagesSpoken = selectedLanguageIds.toList(),
@@ -86,10 +108,13 @@ fun ExperienceAboutScreen(
                 selected = experience,
                 onSelect = { experience = it }
             )
+            if (showErrors && !experienceValid) {
+                FieldError("Please select your years of experience")
+            }
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            FieldLabel("Languages Spoken", helper = "Select all that apply")
+            FieldLabel("Languages Spoken", helper = "Select at least one")
 
             when {
                 viewModel.isLoadingLanguages -> {
@@ -97,10 +122,13 @@ fun ExperienceAboutScreen(
                 }
                 viewModel.languages.isEmpty() -> {
                     Text(
-                        "No languages available right now. You can add other languages below.",
+                        text = viewModel.languagesError ?: "No languages available right now. You can add other languages below.",
                         fontSize = 13.sp,
-                        color = TextSecondary
+                        color = if (viewModel.languagesError != null) SosRed else TextSecondary
                     )
+                    if (viewModel.languagesError != null) {
+                        PrimaryButton(text = "Retry", onClick = { viewModel.loadLanguages() })
+                    }
                 }
                 else -> {
                     viewModel.languages.chunked(3).forEach { rowItems ->
@@ -124,12 +152,27 @@ fun ExperienceAboutScreen(
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 Checkbox(
                     checked = otherChecked,
-                    onCheckedChange = { otherChecked = it },
+                    onCheckedChange = {
+                        otherChecked = it
+                        if (!it) otherLanguage = ""
+                    },
                     colors = CheckboxDefaults.colors(checkedColor = TealPrimary)
                 )
                 Text("Other", fontSize = 13.sp, color = TextPrimary)
-                Spacer(modifier = Modifier.width(10.dp))
-                HomieeTextField(otherLanguage, { otherLanguage = it }, "Enter language", modifier = Modifier.weight(1f))
+
+                if (otherChecked) {
+                    Spacer(modifier = Modifier.width(10.dp))
+                    HomieeTextField(
+                        otherLanguage,
+                        { otherLanguage = it },
+                        "Enter language",
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+
+            if (showErrors && !languagesValid) {
+                FieldError(languageErrorText)
             }
         }
 
@@ -141,15 +184,26 @@ fun ExperienceAboutScreen(
                 placeholder = { Text("Write about yourself...", color = HintGray, fontSize = 14.sp) },
                 modifier = Modifier.fillMaxWidth().height(120.dp),
                 shape = RoundedCornerShape(14.dp),
-                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = TealPrimary, unfocusedBorderColor = BorderGray)
+                isError = showErrors && !aboutValid,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = TealPrimary,
+                    unfocusedBorderColor = BorderGray,
+                    errorBorderColor = SosRed
+                )
             )
-            Text(
-                "${aboutYou.length}/300",
-                fontSize = 11.sp,
-                color = TextSecondary,
-                textAlign = TextAlign.End,
-                modifier = Modifier.fillMaxWidth()
-            )
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                if (showErrors && !aboutValid) {
+                    FieldError("Please tell us about yourself")
+                } else {
+                    Spacer(modifier = Modifier.width(1.dp))
+                }
+                Text(
+                    "${aboutYou.length}/300",
+                    fontSize = 11.sp,
+                    color = TextSecondary,
+                    textAlign = TextAlign.End
+                )
+            }
         }
     }
 }

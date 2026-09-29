@@ -19,6 +19,7 @@ import retrofit2.http.GET
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
+import com.homiee.helper.data.model.HelperProfileResponse
 
 interface UserDetailsApiService {
 
@@ -47,17 +48,16 @@ interface UserDetailsApiService {
         @Part policeVerificationCert: MultipartBody.Part?
     ): Response<DocumentsResponse>
 
-    // Catalog of valid services (real primary keys used by step 4)
-    @GET("api/userdetails/userdetails/services/")
+    // Catalog of services. Returned as JsonElement because the backend nests it: [ [ {...} ] ]
+    @GET("api/userdetails/services/")
     suspend fun getServices(): Response<JsonElement>
 
     // Step 4 - services & pricing
     @POST("api/userdetails/helpers/services/")
     suspend fun submitServices(@Body request: ServicesRequest): Response<ServicesResponse>
 
-    // Catalog of valid languages (real primary keys used by step 5)
-    // NOTE: path is assumed to mirror the services catalog - verify in Swagger.
-    @GET("api/userdetails/userdetails/languages/")
+    // Catalog of languages (ids used by step 5). Same nested shape: [ [ {id,name,code} ] ]
+    @GET("api/userdetails/helpers/languages/")
     suspend fun getLanguages(): Response<JsonElement>
 
     // Step 5 - experience & languages
@@ -67,4 +67,8 @@ interface UserDetailsApiService {
     // Step 6 - availability
     @POST("api/userdetails/helpers/availability/")
     suspend fun submitAvailability(@Body request: AvailabilityRequest): Response<AvailabilityResponse>
+
+    // Full profile — every onboarding step combined for the logged-in helper
+    @GET("api/userdetails/helpers/profile/")
+    suspend fun getProfile(): Response<HelperProfileResponse>
 }

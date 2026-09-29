@@ -78,7 +78,6 @@ fun ExperienceAboutScreenPreview() {
         ExperienceAboutScreen(
             viewModel = ExperienceAboutViewModel(UserDetailsRepository(context)),
             onBack = {},
-            onSkip = {},
             onContinue = {}
         )
     }
@@ -92,7 +91,6 @@ fun AvailabilityScreenPreview() {
         AvailabilityScreen(
             viewModel = AvailabilityViewModel(UserDetailsRepository(context)),
             onBack = {},
-            onSkip = {},
             onContinue = {}
         )
     }

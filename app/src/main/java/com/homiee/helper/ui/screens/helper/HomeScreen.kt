@@ -115,31 +115,31 @@ fun HomeScreen(
                 Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Complete Your Profile - white card, compacted into a single row: title, ring, button.
-                    ElevatedHomeCard {
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("Complete Your Profile", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    "Unlock more job opportunities.",
-                                    fontSize = 11.sp,
-                                    color = TextSecondary
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(10.dp))
-                            ProgressRing(percent = profileCompletionPercent, size = 38.dp, strokeWidth = 4.dp)
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Button(
-                                onClick = onCompleteProfileClick,
-                                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp),
-                                shape = RoundedCornerShape(10.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = TealPrimary)
-                            ) {
-                                Text("Complete", fontSize = 12.sp, color = Color.White, fontWeight = FontWeight.SemiBold)
-                            }
-                        }
-                    }
+//                    // Complete Your Profile - white card, compacted into a single row: title, ring, button.
+//                    ElevatedHomeCard {
+//                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+//                            Column(modifier = Modifier.weight(1f)) {
+//                                Text("Complete Your Profile", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+//                                Spacer(modifier = Modifier.height(2.dp))
+//                                Text(
+//                                    "Unlock more job opportunities.",
+//                                    fontSize = 11.sp,
+//                                    color = TextSecondary
+//                                )
+//                            }
+//                            Spacer(modifier = Modifier.width(10.dp))
+//                            ProgressRing(percent = profileCompletionPercent, size = 38.dp, strokeWidth = 4.dp)
+//                            Spacer(modifier = Modifier.width(10.dp))
+//                            Button(
+//                                onClick = onCompleteProfileClick,
+//                                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp),
+//                                shape = RoundedCornerShape(10.dp),
+//                                colors = ButtonDefaults.buttonColors(containerColor = TealPrimary)
+//                            ) {
+//                                Text("Complete", fontSize = 12.sp, color = Color.White, fontWeight = FontWeight.SemiBold)
+//                            }
+//                        }
+//                    }
 
                     Spacer(modifier = Modifier.height(12.dp))
 

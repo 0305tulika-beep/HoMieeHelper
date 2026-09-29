@@ -128,6 +128,16 @@ fun PersonalInformationScreen(
 
     val isAadhaar = idTypeValue == "aadhaar"
 
+    // Continue stays disabled until every field is filled.
+    val isFormValid =
+        fullName.isNotBlank() &&
+                dob.isNotBlank() &&
+                idTypeValue.isNotBlank() &&
+                idNumber.isNotBlank() &&
+                (!isAadhaar || idNumber.length == 12) &&
+                frontCardUri != null &&
+                backCardUri != null
+
     val currentYear = remember { Calendar.getInstance().get(Calendar.YEAR) }
     val datePickerState = rememberDatePickerState(
         // Open around 25 years ago so the user doesn't scroll back from today.
@@ -166,16 +176,16 @@ fun PersonalInformationScreen(
                         // id_verified is never exposed to the user - the repository always
                         // sends "false"; only the backend/admin can flip it after review.
                         viewModel.submit(
-                            fullName = fullName,
+                            fullName = fullName.trim(),
                             dateOfBirth = dob,
                             govtIdType = idTypeValue,
-                            govtIdNumber = idNumber,
+                            govtIdNumber = idNumber.trim(),
                             frontCardUri = frontCardUri,
                             backCardUri = backCardUri,
                             onSuccess = onContinue
                         )
                     },
-                    enabled = !viewModel.isLoading
+                    enabled = !viewModel.isLoading && isFormValid
                 )
             }
         }

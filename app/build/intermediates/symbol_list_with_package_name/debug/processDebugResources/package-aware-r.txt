@@ -2977,14 +2977,18 @@ drawable googleg_standard_color_18
 drawable header
 drawable homebg
 drawable ic_arrow_back_black_24
+drawable ic_babysitting
 drawable ic_call_answer
 drawable ic_call_answer_low
 drawable ic_call_answer_video
 drawable ic_call_answer_video_low
 drawable ic_call_decline
 drawable ic_call_decline_low
+drawable ic_cleaning
 drawable ic_clear_black_24
 drawable ic_clock_black_24dp
+drawable ic_cooking
+drawable ic_eldercare
 drawable ic_keyboard_black_24dp
 drawable ic_m3_chip_check
 drawable ic_m3_chip_checked_circle
@@ -2994,6 +2998,7 @@ drawable ic_mtrl_chip_checked_black
 drawable ic_mtrl_chip_checked_circle
 drawable ic_mtrl_chip_close_circle
 drawable ic_search_black_24
+drawable ic_service_default
 drawable img
 drawable img_1
 drawable indeterminate_static

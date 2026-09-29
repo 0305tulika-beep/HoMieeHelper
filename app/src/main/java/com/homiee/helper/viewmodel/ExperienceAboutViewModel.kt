@@ -16,40 +16,43 @@ class ExperienceAboutViewModel(
     private val repository: UserDetailsRepository
 ) : ViewModel() {
 
+    // Submit state (shown in the footer).
     var isLoading by mutableStateOf(false); private set
     var errorMessage by mutableStateOf<String?>(null); private set
 
-    // Real languages from the backend catalog (with real ids).
+    // Language catalog state (shown in the Languages section).
     var languages by mutableStateOf<List<LanguageDto>>(emptyList()); private set
     var isLoadingLanguages by mutableStateOf(true); private set
+    var languagesError by mutableStateOf<String?>(null); private set
 
     init {
         loadLanguages()
     }
 
     fun loadLanguages() {
+        if (isLoadingLanguages && languages.isNotEmpty()) return
         viewModelScope.launch {
             isLoadingLanguages = true
-            errorMessage = null
+            languagesError = null
             when (val result = repository.getLanguages()) {
                 is ApiResult.Success -> languages = result.data
-                is ApiResult.Error -> errorMessage = result.message
+                is ApiResult.Error -> languagesError = result.message
             }
             isLoadingLanguages = false
         }
     }
 
+    /**
+     * The screen already validates that the user picked a language or filled in
+     * "Other", so languagesSpoken may be empty here (custom language only).
+     */
     fun submit(
         yearsOfExperience: Int,
         languagesSpoken: List<Int>,
         about: String,
         onSuccess: () -> Unit
     ) {
-        // Only insist on a language when the backend actually has some to pick from.
-        if (languagesSpoken.isEmpty() && languages.isNotEmpty()) {
-            errorMessage = "Please select at least one language."
-            return
-        }
+        if (isLoading) return
         viewModelScope.launch {
             isLoading = true
             errorMessage = null

@@ -14,6 +14,10 @@ import com.homiee.helper.ui.screens.helper.RequestDetailsScreen
 import com.homiee.helper.ui.screens.helper.TotalEarningsScreen
 import com.homiee.helper.ui.screens.helper.VerifiedDocumentsScreen
 import com.homiee.helper.ui.theme.HomieeHelperTheme
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
+import com.homiee.helper.data.repository.UserDetailsRepository
+import com.homiee.helper.viewmodel.ProfileViewModel
 
 /**
  * Previews for the Home / Job Requests / My Jobs / Messages / Profile
@@ -114,8 +118,13 @@ fun ChatScreenPreview() {
 @Preview(name = "Profile", showBackground = true, widthDp = PREVIEW_WIDTH_DP, heightDp = PREVIEW_HEIGHT_DP)
 @Composable
 fun ProfileScreenPreview() {
+    val context = LocalContext.current
+    val profileViewModel = remember {
+        ProfileViewModel(UserDetailsRepository(context.applicationContext))
+    }
     HomieeHelperTheme {
         ProfileScreen(
+            profileViewModel = profileViewModel,
             onViewVerifiedDocuments = {},
             onViewTotalEarnings = {},
             accountViewModel = null,

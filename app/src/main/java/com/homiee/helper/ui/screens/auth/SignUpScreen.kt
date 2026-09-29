@@ -275,9 +275,9 @@ fun SignUpScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
         OrDivider()
-
-        Spacer(modifier = Modifier.height(20.dp))
-        GoogleButton(text = "Sign up with Google", onClick = onGoogleSignUpClick)
+//
+//        Spacer(modifier = Modifier.height(20.dp))
+//        GoogleButton(text = "Sign up with Google", onClick = onGoogleSignUpClick)
 
         Spacer(modifier = Modifier.height(20.dp))
         Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {

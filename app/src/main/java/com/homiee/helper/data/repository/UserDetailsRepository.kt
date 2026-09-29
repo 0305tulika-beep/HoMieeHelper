@@ -20,26 +20,35 @@ import com.homiee.helper.data.model.ServicePriceItem
 import com.homiee.helper.data.model.ServicesRequest
 import com.homiee.helper.data.model.ServicesResponse
 import com.homiee.helper.data.remote.RetrofitClient
+import kotlinx.coroutines.CancellationException
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Response
+import com.homiee.helper.data.model.HelperProfileResponse
 
 // Reuses the ApiResult sealed class already declared in AuthRepository.kt (same package).
 class UserDetailsRepository(private val context: Context) {
 
     private val api = RetrofitClient.userDetailsApi
+    private val gson = Gson()
+
+    private companion object {
+        const val TAG = "UserDetailsRepository"
+    }
+
+    // ── Shared plumbing ─────────────────────────────────────────────────────
 
     private fun <T> parseError(response: Response<T>): ApiResult.Error {
         val raw = response.errorBody()?.string()
-        Log.e("UserDetailsRepository", "HTTP ${response.code()} error body: $raw")
+        Log.e(TAG, "HTTP ${response.code()} error body: $raw")
 
         if (raw.isNullOrBlank()) {
             return ApiResult.Error("Something went wrong (${response.code()})", response.code())
         }
         val wrapped = try {
-            Gson().fromJson(raw, ApiErrorResponse::class.java)
+            gson.fromJson(raw, ApiErrorResponse::class.java)
         } catch (e: Exception) {
             null
         }
@@ -50,6 +59,24 @@ class UserDetailsRepository(private val context: Context) {
             return ApiResult.Error(wrapped!!.message!!, response.code())
         }
         return ApiResult.Error("Something went wrong (${response.code()})", response.code())
+    }
+
+    /** Runs a Retrofit call and maps it to ApiResult. Never swallows coroutine cancellation. */
+    private suspend fun <T> call(block: suspend () -> Response<T>): ApiResult<T> {
+        return try {
+            val response = block()
+            val body = response.body()
+            if (response.isSuccessful && body != null) {
+                ApiResult.Success(body)
+            } else {
+                parseError(response)
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e(TAG, "Request failed", e)
+            ApiResult.Error(e.message ?: "Network error. Please try again.")
+        }
     }
 
     private fun textPart(value: String): RequestBody =
@@ -67,21 +94,31 @@ class UserDetailsRepository(private val context: Context) {
         return MultipartBody.Part.createFormData(partName, fileName, body)
     }
 
-    /** Flattens [ {...} ], [ [ {...} ] ] and { "results": [ {...} ] } into one list. */
+    /**
+     * Flattens [ {...} ], [ [ {...} ] ], { "results": [...] } and { "data": [...] }
+     * into one list. Objects without an "id" (e.g. a stray wrapper) are ignored.
+     */
     private fun <T> flattenList(root: JsonElement, clazz: Class<T>): List<T> {
-        val gson = Gson()
         val out = mutableListOf<T>()
         fun walk(el: JsonElement) {
             when {
                 el.isJsonArray -> el.asJsonArray.forEach { walk(it) }
                 el.isJsonObject && el.asJsonObject.has("results") ->
                     walk(el.asJsonObject.get("results"))
-                el.isJsonObject -> out.add(gson.fromJson(el, clazz))
+                el.isJsonObject && el.asJsonObject.has("data") ->
+                    walk(el.asJsonObject.get("data"))
+                el.isJsonObject && el.asJsonObject.has("id") ->
+                    out.add(gson.fromJson(el, clazz))
             }
         }
         walk(root)
         return out
     }
+    // ── Profile ─────────────────────────────────────────────────────────────
+
+    suspend fun getProfile(): ApiResult<HelperProfileResponse> = call { api.getProfile() }
+
+    // ── Steps 1-3 ───────────────────────────────────────────────────────────
 
     suspend fun submitIdentity(
         fullName: String,
@@ -90,27 +127,18 @@ class UserDetailsRepository(private val context: Context) {
         govtIdNumber: String,
         frontCardUri: Uri?,
         backCardUri: Uri?
-    ): ApiResult<IdentityResponse> {
-        return try {
-            val response = api.submitIdentity(
-                fullName = textPart(fullName),
-                dateOfBirth = textPart(dateOfBirth),
-                govtIdType = textPart(govtIdType),
-                govtIdNumber = textPart(govtIdNumber),
-                // Always false from the app - actual verification is a backend/admin action,
-                // never something the onboarding form itself can set.
-                idVerified = textPart("false"),
-                frontCard = filePart("front_card", frontCardUri),
-                backCard = filePart("back_card", backCardUri)
-            )
-            if (response.isSuccessful && response.body() != null) {
-                ApiResult.Success(response.body()!!)
-            } else {
-                parseError(response)
-            }
-        } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Network error. Please try again.")
-        }
+    ): ApiResult<IdentityResponse> = call {
+        api.submitIdentity(
+            fullName = textPart(fullName),
+            dateOfBirth = textPart(dateOfBirth),
+            govtIdType = textPart(govtIdType),
+            govtIdNumber = textPart(govtIdNumber),
+            // Always false from the app - actual verification is a backend/admin action,
+            // never something the onboarding form itself can set.
+            idVerified = textPart("false"),
+            frontCard = filePart("front_card", frontCardUri),
+            backCard = filePart("back_card", backCardUri)
+        )
     }
 
     suspend fun submitAddress(
@@ -120,125 +148,76 @@ class UserDetailsRepository(private val context: Context) {
         pincode: String,
         latitude: String,
         longitude: String
-    ): ApiResult<AddressResponse> {
-        return try {
-            val response = api.submitAddress(
-                AddressRequest(
-                    house_no = houseNo,
-                    state = state,
-                    city = city,
-                    pincode = pincode,
-                    latitude = latitude,
-                    longitude = longitude
-                )
+    ): ApiResult<AddressResponse> = call {
+        api.submitAddress(
+            AddressRequest(
+                house_no = houseNo,
+                state = state,
+                city = city,
+                pincode = pincode,
+                latitude = latitude,
+                longitude = longitude
             )
-            if (response.isSuccessful && response.body() != null) {
-                ApiResult.Success(response.body()!!)
-            } else {
-                parseError(response)
-            }
-        } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Network error. Please try again.")
-        }
+        )
     }
 
     suspend fun submitDocuments(
         profilePhotoUri: Uri?,
         policeCertUri: Uri?
-    ): ApiResult<DocumentsResponse> {
-        return try {
-            val response = api.submitDocuments(
-                filePart("profile_photo", profilePhotoUri),
-                filePart("police_verification_cert", policeCertUri)
-            )
-            if (response.isSuccessful && response.body() != null) {
-                ApiResult.Success(response.body()!!)
-            } else {
-                parseError(response)
-            }
-        } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Network error. Please try again.")
-        }
+    ): ApiResult<DocumentsResponse> = call {
+        api.submitDocuments(
+            filePart("profile_photo", profilePhotoUri),
+            filePart("police_verification_cert", policeCertUri)
+        )
     }
+
+    // ── Step 4 ──────────────────────────────────────────────────────────────
 
     /** Fetches the real service catalog (ids + names) from the backend. */
-    suspend fun getServices(): ApiResult<List<ServiceDto>> {
-        return try {
-            val response = api.getServices()
-            val body = response.body()
-            if (response.isSuccessful && body != null) {
-                ApiResult.Success(flattenList(body, ServiceDto::class.java))
-            } else {
-                parseError(response)
+    suspend fun getServices(): ApiResult<List<ServiceDto>> =
+        when (val result = call { api.getServices() }) {
+            is ApiResult.Success -> {
+                val list = flattenList(result.data, ServiceDto::class.java)
+                    .filter { it.name.isNotBlank() }
+                    .distinctBy { it.id }
+                Log.d(TAG, "services parsed: ${list.size}")
+                ApiResult.Success(list)
             }
-        } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Network error. Please try again.")
+            is ApiResult.Error -> result
         }
-    }
 
-    /** Fetches the real language catalog (ids + names) from the backend. */
-    suspend fun getLanguages(): ApiResult<List<LanguageDto>> {
-        return try {
-            val response = api.getLanguages()
-            val body = response.body()
-            if (response.isSuccessful && body != null) {
-                ApiResult.Success(flattenList(body, LanguageDto::class.java))
-            } else {
-                parseError(response)
-            }
-        } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Network error. Please try again.")
-        }
-    }
+    suspend fun submitServices(servicePrices: List<ServicePriceItem>): ApiResult<ServicesResponse> =
+        call { api.submitServices(ServicesRequest(servicePrices)) }
 
-    suspend fun submitServices(servicePrices: List<ServicePriceItem>): ApiResult<ServicesResponse> {
-        return try {
-            val response = api.submitServices(ServicesRequest(servicePrices))
-            if (response.isSuccessful && response.body() != null) {
-                ApiResult.Success(response.body()!!)
-            } else {
-                parseError(response)
+    // ── Step 5 ──────────────────────────────────────────────────────────────
+
+    /** Fetches the real language catalog (ids + names + codes) from the backend. */
+    suspend fun getLanguages(): ApiResult<List<LanguageDto>> =
+        when (val result = call { api.getLanguages() }) {
+            is ApiResult.Success -> {
+                Log.d(TAG, "languages raw: ${result.data}")
+                val list = flattenList(result.data, LanguageDto::class.java)
+                    .filter { it.name.isNotBlank() }
+                    .distinctBy { it.id }
+                Log.d(TAG, "languages parsed: ${list.size}")
+                ApiResult.Success(list)
             }
-        } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Network error. Please try again.")
+            is ApiResult.Error -> result
         }
-    }
 
     suspend fun submitExperience(
         yearsOfExperience: Int,
         languagesSpoken: List<Int>,
         about: String
-    ): ApiResult<ExperienceResponse> {
-        return try {
-            val response = api.submitExperience(
-                ExperienceRequest(yearsOfExperience, languagesSpoken, about)
-            )
-            if (response.isSuccessful && response.body() != null) {
-                ApiResult.Success(response.body()!!)
-            } else {
-                parseError(response)
-            }
-        } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Network error. Please try again.")
-        }
-    }
+    ): ApiResult<ExperienceResponse> =
+        call { api.submitExperience(ExperienceRequest(yearsOfExperience, languagesSpoken, about)) }
+
+    // ── Step 6 ──────────────────────────────────────────────────────────────
 
     suspend fun submitAvailability(
         workingDays: List<String>,
         startTime: String,
         endTime: String
-    ): ApiResult<AvailabilityResponse> {
-        return try {
-            val response = api.submitAvailability(
-                AvailabilityRequest(workingDays, startTime, endTime)
-            )
-            if (response.isSuccessful && response.body() != null) {
-                ApiResult.Success(response.body()!!)
-            } else {
-                parseError(response)
-            }
-        } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Network error. Please try again.")
-        }
-    }
+    ): ApiResult<AvailabilityResponse> =
+        call { api.submitAvailability(AvailabilityRequest(workingDays, startTime, endTime)) }
 }

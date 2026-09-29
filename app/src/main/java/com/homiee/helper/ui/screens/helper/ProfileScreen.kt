@@ -39,37 +39,118 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.homiee.helper.data.model.HelperProfileResponse
 import com.homiee.helper.ui.components.*
 import com.homiee.helper.ui.theme.*
 import com.homiee.helper.viewmodel.AccountActionUiState
 import com.homiee.helper.viewmodel.AccountActionViewModel
 import androidx.compose.ui.text.input.VisualTransformation
 import com.homiee.helper.viewmodel.AccountAction
+import com.homiee.helper.viewmodel.ProfileViewModel
+import java.text.SimpleDateFormat
+import java.util.Locale
 
-private data class HelperProfile(
-    val name: String = "Sunita Agarwal",
-    val initials: String = "SA",
-    val helperId: String = "HLP87654",
-    val memberSince: String = "May 2025",
-    val email: String = "sunita.agarwal@example.com",
-    val about: String = "I am a dedicated and trustworthy helper with 3+ years of experience in providing excellent household support. I take pride in my work and always try to keep my surroundings clean and organized.",
-    val dob: String = "12 Aug 1992",
-    val address: String = "A-1204, ATS Advantage, Indirapuram, Ghaziabad, Uttar Pradesh - 201014",
-    val languages: List<String> = listOf("Hindi", "English", "Punjabi"),
-    val experience: String = "3 Years",
-    val workingDays: List<String> = listOf("Mon", "Tue", "Wed", "Thu", "Fri"),
-    val allDays: List<String> = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"),
-    val workingSlot: String = "09:00 AM  -  06:00 PM",
-    val totalEarnings: String = "₹ 24,750"
-)
+// ── UI model built from the GET profile response ────────────────────────────
 
 private data class ServiceCharge(val label: String, val price: String)
+
+private data class ProfileUi(
+    val name: String,
+    val initials: String,
+    val about: String,
+    val dob: String,
+    val address: String,
+    val services: List<ServiceCharge>,
+    val languages: List<String>,
+    val experience: String,
+    val workingDays: List<String>,
+    val workingSlot: String,
+    val totalEarnings: String
+)
+
+private val allDays = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+
+/** "1990-05-12" -> "12 May 1990". Falls back to the raw value if it can't be parsed. */
+private fun formatDob(raw: String?): String {
+    if (raw.isNullOrBlank()) return "—"
+    return try {
+        val parsed = SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(raw)
+        SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH).format(parsed!!)
+    } catch (e: Exception) {
+        raw
+    }
+}
+
+/** "09:00:00" -> "09:00 AM". Falls back to the raw value if it can't be parsed. */
+private fun formatTime(raw: String?): String {
+    if (raw.isNullOrBlank()) return ""
+    return try {
+        val parsed = SimpleDateFormat("HH:mm:ss", Locale.US).parse(raw)
+        SimpleDateFormat("hh:mm a", Locale.US).format(parsed!!)
+    } catch (e: Exception) {
+        raw
+    }
+}
+
+/** "200.00" -> "200". */
+private fun formatPrice(raw: String?): String =
+    raw?.toBigDecimalOrNull()?.stripTrailingZeros()?.toPlainString() ?: raw.orEmpty()
+
+/** Backend stores the lower bound of each bucket used on the experience form. */
+private fun experienceLabel(years: Int?): String = when {
+    years == null -> "—"
+    years < 1 -> "Less than 1 year"
+    years < 3 -> "1-2 years"
+    years < 5 -> "3-5 years"
+    else -> "5+ years"
+}
+
+private fun HelperProfileResponse.toUi(): ProfileUi {
+    val fullName = full_name.orEmpty().trim()
+    val initials = fullName.split(" ")
+        .filter { it.isNotBlank() }
+        .take(2)
+        .joinToString("") { it.first().uppercase() }
+        .ifBlank { "?" }
+
+    val addressLine = listOf(house_no, city, state)
+        .filter { !it.isNullOrBlank() }
+        .joinToString(", ")
+    val address = when {
+        addressLine.isBlank() && pincode.isNullOrBlank() -> "—"
+        pincode.isNullOrBlank() -> addressLine
+        addressLine.isBlank() -> pincode
+        else -> "$addressLine - $pincode"
+    }
+
+    val start = formatTime(start_time)
+    val end = formatTime(end_time)
+
+    return ProfileUi(
+        name = fullName.ifBlank { "Helper" },
+        initials = initials,
+        about = about?.takeIf { it.isNotBlank() } ?: "—",
+        dob = formatDob(date_of_birth),
+        address = address,
+        services = service_prices.orEmpty().mapNotNull { item ->
+            val name = item.service?.name?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+            ServiceCharge(name, "₹ ${formatPrice(item.price_per_hour)} / Hour")
+        },
+        languages = languages_spoken.orEmpty().map { it.name }.filter { it.isNotBlank() },
+        experience = experienceLabel(years_of_experience),
+        workingDays = working_days.orEmpty().map { it.lowercase() },
+        workingSlot = if (start.isNotBlank() && end.isNotBlank()) "$start  -  $end" else "—",
+        // TODO: not part of the profile response yet — comes from the earnings endpoint.
+        totalEarnings = "₹ 24,750"
+    )
+}
 
 /** Consistent 1dp shadow used across Home / Job Requests / My Jobs — applied here too. */
 private val cardElevation = Modifier.shadow(elevation = 1.dp, shape = RoundedCornerShape(16.dp), clip = false)
 
 @Composable
 fun ProfileScreen(
+    profileViewModel: ProfileViewModel,
     onViewVerifiedDocuments: () -> Unit,
     onViewTotalEarnings: () -> Unit,
     accountViewModel: AccountActionViewModel? = null,
@@ -80,15 +161,6 @@ fun ProfileScreen(
     onNavItemClick: (HelperNavItem) -> Unit = {}
 ) {
     DashboardSystemBars(darkStatusBarIcons = false)
-    val profile = remember { HelperProfile() }
-    val services = remember {
-        listOf(
-            ServiceCharge("Cleaning", "₹ 500 / Visit"),
-            ServiceCharge("Cooking", "₹ 600 / Visit"),
-            ServiceCharge("Babysitting", "₹ 550 / Hour"),
-            ServiceCharge("Eldercare", "₹ 600 / Hour")
-        )
-    }
     var settingsOpen by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -118,169 +190,38 @@ fun ProfileScreen(
                     }
                 }
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                        .padding(horizontal = 20.dp)
-                ) {
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Identity card — avatar has a small edit/camera badge on it.
-                    // Actually swapping the photo needs an image picker + upload flow,
-                    // so onEditProfilePhoto is just wired as a stub for now.
-                    // TODO: hook onEditProfilePhoto up to an image picker + upload to backend.
-                    SectionCard(modifier = cardElevation) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box {
-                                InitialsAvatar(initials = profile.initials, size = 64.dp)
-                                Box(
-                                    modifier = Modifier
-                                        .align(Alignment.BottomEnd)
-                                        .size(22.dp)
-                                        .clip(CircleShape)
-                                        .background(Color.White)
-                                        .border(1.dp, BorderGray, CircleShape)
-                                        .clickable { onEditProfilePhoto() },
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        Icons.Filled.CameraAlt,
-                                        contentDescription = "Edit profile photo",
-                                        tint = TealPrimary,
-                                        modifier = Modifier.size(12.dp)
-                                    )
-                                }
-                            }
-                            Spacer(modifier = Modifier.width(14.dp))
-                            Column {
-                                Text(profile.name, fontSize = 17.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(profile.email, fontSize = 12.sp, color = TextSecondary)
-                                Spacer(modifier = Modifier.height(6.dp))
-                                StatusChip(text = "Verified", background = SuccessGreenBg, textColor = SuccessGreen)
-                                Spacer(modifier = Modifier.height(4.dp))
-                            }
+                val profile = profileViewModel.profile
+                when {
+                    profile != null -> {
+                        val ui = remember(profile) { profile.toUi() }
+                        ProfileContent(
+                            ui = ui,
+                            onViewVerifiedDocuments = onViewVerifiedDocuments,
+                            onViewTotalEarnings = onViewTotalEarnings,
+                            onEditProfilePhoto = onEditProfilePhoto
+                        )
+                    }
+                    profileViewModel.isLoading -> {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(color = TealPrimary)
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(14.dp))
-                    SectionCard(modifier = cardElevation) {
-                        SectionHeader(icon = Icons.Filled.Person, title = "About Me")
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(profile.about, fontSize = 12.sp, color = TextSecondary, lineHeight = 17.sp)
-                    }
-
-                    Spacer(modifier = Modifier.height(14.dp))
-                    SectionCard(modifier = cardElevation) {
-                        SectionHeader(icon = Icons.Filled.Badge, title = "Personal Information")
-                        Spacer(modifier = Modifier.height(10.dp))
-                        LabeledDetailRow(label = "Date of Birth", value = profile.dob)
-                        Spacer(modifier = Modifier.height(10.dp))
-                        // Address gets its own row: label stays put on the left, the value
-                        // sits in a fixed column to the right and grows downward (wraps
-                        // onto as many lines as it needs) instead of squeezing sideways
-                        // into — or overlapping — the "Address" label.
-                        LabeledDetailRow(label = "Address", value = profile.address)
-                        Spacer(modifier = Modifier.height(12.dp))
-                        // Elaborated into a full tappable row (icon + title + short
-                        // description + chevron) instead of a bare text link.
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(TealPale)
-                                .clickable { onViewVerifiedDocuments() }
-                                .padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                    else -> {
+                        Column(
+                            modifier = Modifier.fillMaxSize().padding(24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
                         ) {
-                            Icon(Icons.Filled.VerifiedUser, contentDescription = null, tint = TealPrimary, modifier = Modifier.size(20.dp))
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("View Verified Documents", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
-                                Text("Aadhaar, PAN, police verification & more", fontSize = 11.sp, color = TextSecondary)
-                            }
-                            Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = TealPrimary)
+                            Text(
+                                text = profileViewModel.errorMessage ?: "Couldn't load your profile.",
+                                fontSize = 13.sp,
+                                color = SosRed,
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            PrimaryButton(text = "Retry", onClick = { profileViewModel.loadProfile() })
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(14.dp))
-                    SectionCard(modifier = cardElevation) {
-                        SectionHeader(icon = Icons.Filled.Payments, title = "Services & Charges")
-                        Spacer(modifier = Modifier.height(6.dp))
-                        services.forEach { InfoRow(it.label, it.price) }
-                    }
-
-                    Spacer(modifier = Modifier.height(14.dp))
-                    SectionCard(modifier = cardElevation) {
-                        SectionHeader(icon = Icons.Filled.Translate, title = "Languages Spoken")
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            profile.languages.forEach { lang ->
-                                Box(
-                                    modifier = Modifier.clip(RoundedCornerShape(50)).background(TealPale).padding(horizontal = 12.dp, vertical = 6.dp)
-                                ) { Text(lang, fontSize = 12.sp, color = TealPrimaryDark, fontWeight = FontWeight.Medium) }
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(14.dp))
-                    SectionCard(modifier = cardElevation) {
-                        SectionHeader(icon = Icons.Filled.WorkHistory, title = "Experience")
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(profile.experience, fontSize = 13.sp, color = TextSecondary)
-                    }
-
-                    Spacer(modifier = Modifier.height(14.dp))
-                    SectionCard(modifier = cardElevation) {
-                        SectionHeader(icon = Icons.Filled.CalendarMonth, title = "Working Days")
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            profile.allDays.forEach { day ->
-                                val active = day in profile.workingDays
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(if (active) TealPrimary else TealPale)
-                                        .padding(horizontal = 10.dp, vertical = 6.dp)
-                                ) {
-                                    Text(day, fontSize = 11.sp, color = if (active) Color.White else TealPrimaryDark, fontWeight = FontWeight.SemiBold)
-                                }
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(14.dp))
-                        Text("Working Slot", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(profile.workingSlot, fontSize = 13.sp, color = TextSecondary)
-                    }
-
-                    Spacer(modifier = Modifier.height(14.dp))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .then(cardElevation)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(Color.White)
-                            .clickable { onViewTotalEarnings() }
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier.size(40.dp).clip(CircleShape).background(InfoCardBg),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(Icons.Filled.AccountBalanceWallet, contentDescription = null, tint = TealPrimary, modifier = Modifier.size(20.dp))
-                        }
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("Total Earnings", fontSize = 12.sp, color = TextSecondary)
-                            Text(profile.totalEarnings, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-                        }
-                        Text("View Details", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = TealPrimary)
-                        Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = TealPrimary)
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
                 }
             }
         }
@@ -292,6 +233,183 @@ fun ProfileScreen(
             onAccountCleared = onAccountCleared,
             onContactSupport = onContactSupport
         )
+    }
+}
+
+@Composable
+private fun ProfileContent(
+    ui: ProfileUi,
+    onViewVerifiedDocuments: () -> Unit,
+    onViewTotalEarnings: () -> Unit,
+    onEditProfilePhoto: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp)
+    ) {
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Identity card — avatar has a small edit/camera badge on it.
+        // Actually swapping the photo needs an image picker + upload flow,
+        // so onEditProfilePhoto is just wired as a stub for now.
+        // TODO: hook onEditProfilePhoto up to an image picker + upload to backend.
+        SectionCard(modifier = cardElevation) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box {
+                    InitialsAvatar(initials = ui.initials, size = 64.dp)
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .size(22.dp)
+                            .clip(CircleShape)
+                            .background(Color.White)
+                            .border(1.dp, BorderGray, CircleShape)
+                            .clickable { onEditProfilePhoto() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Filled.CameraAlt,
+                            contentDescription = "Edit profile photo",
+                            tint = TealPrimary,
+                            modifier = Modifier.size(12.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.width(14.dp))
+                Column {
+                    Text(ui.name, fontSize = 17.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                    Spacer(modifier = Modifier.height(6.dp))
+                    StatusChip(text = "Verified", background = SuccessGreenBg, textColor = SuccessGreen)
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+        SectionCard(modifier = cardElevation) {
+            SectionHeader(icon = Icons.Filled.Person, title = "About Me")
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(ui.about, fontSize = 12.sp, color = TextSecondary, lineHeight = 17.sp)
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+        SectionCard(modifier = cardElevation) {
+            SectionHeader(icon = Icons.Filled.Badge, title = "Personal Information")
+            Spacer(modifier = Modifier.height(10.dp))
+            LabeledDetailRow(label = "Date of Birth", value = ui.dob)
+            Spacer(modifier = Modifier.height(10.dp))
+            // Address gets its own row: label stays put on the left, the value
+            // sits in a fixed column to the right and grows downward (wraps
+            // onto as many lines as it needs) instead of squeezing sideways
+            // into — or overlapping — the "Address" label.
+            LabeledDetailRow(label = "Address", value = ui.address)
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(TealPale)
+                    .clickable { onViewVerifiedDocuments() }
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Filled.VerifiedUser, contentDescription = null, tint = TealPrimary, modifier = Modifier.size(20.dp))
+                Spacer(modifier = Modifier.width(10.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("View Verified Documents", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+                    Text("Aadhaar, PAN, police verification & more", fontSize = 11.sp, color = TextSecondary)
+                }
+                Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = TealPrimary)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+        SectionCard(modifier = cardElevation) {
+            SectionHeader(icon = Icons.Filled.Payments, title = "Services & Charges")
+            Spacer(modifier = Modifier.height(6.dp))
+            if (ui.services.isEmpty()) {
+                Text("No services added", fontSize = 12.sp, color = TextSecondary)
+            } else {
+                ui.services.forEach { InfoRow(it.label, it.price) }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+        SectionCard(modifier = cardElevation) {
+            SectionHeader(icon = Icons.Filled.Translate, title = "Languages Spoken")
+            Spacer(modifier = Modifier.height(10.dp))
+            if (ui.languages.isEmpty()) {
+                Text("—", fontSize = 12.sp, color = TextSecondary)
+            } else {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    ui.languages.forEach { lang ->
+                        Box(
+                            modifier = Modifier.clip(RoundedCornerShape(50)).background(TealPale).padding(horizontal = 12.dp, vertical = 6.dp)
+                        ) { Text(lang, fontSize = 12.sp, color = TealPrimaryDark, fontWeight = FontWeight.Medium) }
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+        SectionCard(modifier = cardElevation) {
+            SectionHeader(icon = Icons.Filled.WorkHistory, title = "Experience")
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(ui.experience, fontSize = 13.sp, color = TextSecondary)
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+        SectionCard(modifier = cardElevation) {
+            SectionHeader(icon = Icons.Filled.CalendarMonth, title = "Working Days")
+            Spacer(modifier = Modifier.height(10.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                allDays.forEach { day ->
+                    val active = day.lowercase() in ui.workingDays
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(if (active) TealPrimary else TealPale)
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                    ) {
+                        Text(day, fontSize = 11.sp, color = if (active) Color.White else TealPrimaryDark, fontWeight = FontWeight.SemiBold)
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(14.dp))
+            Text("Working Slot", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(ui.workingSlot, fontSize = 13.sp, color = TextSecondary)
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(cardElevation)
+                .clip(RoundedCornerShape(16.dp))
+                .background(Color.White)
+                .clickable { onViewTotalEarnings() }
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier.size(40.dp).clip(CircleShape).background(InfoCardBg),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(Icons.Filled.AccountBalanceWallet, contentDescription = null, tint = TealPrimary, modifier = Modifier.size(20.dp))
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text("Total Earnings", fontSize = 12.sp, color = TextSecondary)
+                Text(ui.totalEarnings, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+            }
+            Text("View Details", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = TealPrimary)
+            Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = TealPrimary)
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
@@ -568,7 +686,7 @@ private fun SettingsPanel(
 }
 
 @Composable
-private fun SettingsRow(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, subtitle: String, tint: Color, onClick: () -> Unit) {
+private fun SettingsRow(icon: ImageVector, label: String, subtitle: String, tint: Color, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()

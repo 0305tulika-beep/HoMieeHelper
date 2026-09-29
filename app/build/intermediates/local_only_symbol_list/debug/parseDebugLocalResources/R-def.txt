@@ -3,6 +3,11 @@ local
 drawable flashbg
 drawable header
 drawable homebg
+drawable ic_babysitting
+drawable ic_cleaning
+drawable ic_cooking
+drawable ic_eldercare
+drawable ic_service_default
 drawable img
 drawable img_1
 drawable logotext

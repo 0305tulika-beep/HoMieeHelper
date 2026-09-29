@@ -1,32 +1,124 @@
 // ServicesPricingScreen.kt
 package com.homiee.helper.ui.screens.forms
 
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.homiee.helper.R
 import com.homiee.helper.data.model.ServicePriceItem
-import com.homiee.helper.ui.components.*
+import com.homiee.helper.ui.components.FieldLabel
+import com.homiee.helper.ui.components.FormScaffold
+import com.homiee.helper.ui.components.PrimaryButton
 import com.homiee.helper.ui.theme.SosRed
 import com.homiee.helper.viewmodel.ServicesPricingViewModel
 
-// Icons are matched by the backend's slug; unknown slugs get a generic icon.
-private fun iconForSlug(slug: String?, name: String): ImageVector =
-    when ((slug ?: name).lowercase()) {
-        "cleaning" -> Icons.Filled.CleaningServices
-        "cooking" -> Icons.Filled.Restaurant
-        "babysitting" -> Icons.Filled.ChildCare
-        "eldercare" -> Icons.Filled.Elderly
-        else -> Icons.Filled.Build
+// Matches on slug + name (partial match), so "house_cleaning", "Cleaning", etc. all work.
+// Unknown services get the default icon.
+@DrawableRes
+private fun iconForService(slug: String?, name: String): Int {
+    val key = "${slug.orEmpty()} $name".lowercase()
+    return when {
+        "clean" in key -> R.drawable.ic_cleaning
+        "cook" in key -> R.drawable.ic_cooking
+        "baby" in key || "child" in key -> R.drawable.ic_babysitting
+        "elder" in key -> R.drawable.ic_eldercare
+        else -> R.drawable.ic_service_default
     }
+}
+
+/**
+ * Local row for one service: icon, name, checkbox, and (when checked)
+ * a price field that opens the NUMBER keyboard.
+ */
+@Composable
+private fun ServicePriceRow(
+    @DrawableRes icon: Int,
+    title: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    amount: String,
+    onAmountChange: (String) -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = BorderStroke(1.dp, Color(0xFFE5E5E5))
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Image (not Icon) so the PNG keeps its original colors
+                    Image(
+                        painter = painterResource(id = icon),
+                        contentDescription = null,
+                        modifier = Modifier.size(32.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = title,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                Checkbox(
+                    checked = checked,
+                    onCheckedChange = onCheckedChange
+                )
+            }
+
+            if (checked) {
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = amount,
+                    onValueChange = { input ->
+                        // Digits only, even if the keyboard lets other characters through
+                        onAmountChange(input.filter { it.isDigit() })
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Enter amount per hour") },
+                    prefix = { Text("₹ ") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Done
+                    )
+                )
+            }
+        }
+    }
+}
 
 @Composable
 fun ServicesPricingScreen(
@@ -84,8 +176,8 @@ fun ServicesPricingScreen(
             }
             else -> {
                 viewModel.services.forEach { service ->
-                    ServiceItem(
-                        icon = iconForSlug(service.slug, service.name),
+                    ServicePriceRow(
+                        icon = iconForService(service.slug, service.name),
                         title = service.name,
                         checked = checkedState[service.id] ?: false,
                         onCheckedChange = { checkedState[service.id] = it },
