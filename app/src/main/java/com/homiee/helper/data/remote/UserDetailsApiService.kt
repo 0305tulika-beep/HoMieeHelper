@@ -71,4 +71,5 @@ interface UserDetailsApiService {
     // Full profile — every onboarding step combined for the logged-in helper
     @GET("api/userdetails/helpers/profile/")
     suspend fun getProfile(): Response<HelperProfileResponse>
+
 }

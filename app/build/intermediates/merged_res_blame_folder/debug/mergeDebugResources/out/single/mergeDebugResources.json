@@ -1,142 +1,142 @@
 [
     {
-        "merged": "com.homiee.helper.app-debug-67:/drawable_ic_cooking.xml.flat",
-        "source": "com.homiee.helper.app-main-69:/drawable/ic_cooking.xml"
+        "merged": "com.homiee.helper.app-debug-68:/mipmap-hdpi_ic_launcher.webp.flat",
+        "source": "com.homiee.helper.app-main-70:/mipmap-hdpi/ic_launcher.webp"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\mipmap-xhdpi_ic_launcher.webp.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\mipmap-xhdpi\\ic_launcher.webp"
+        "merged": "com.homiee.helper.app-debug-68:/drawable_img_1.png.flat",
+        "source": "com.homiee.helper.app-main-70:/drawable/img_1.png"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\mipmap-mdpi_ic_launcher_round.webp.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\mipmap-mdpi\\ic_launcher_round.webp"
+        "merged": "com.homiee.helper.app-debug-68:/mipmap-hdpi_ic_launcher_round.webp.flat",
+        "source": "com.homiee.helper.app-main-70:/mipmap-hdpi/ic_launcher_round.webp"
     },
     {
-        "merged": "com.homiee.helper.app-debug-67:/drawable_ic_cleaning.xml.flat",
-        "source": "com.homiee.helper.app-main-69:/drawable/ic_cleaning.xml"
+        "merged": "com.homiee.helper.app-debug-68:/mipmap-xxxhdpi_ic_launcher_foreground.webp.flat",
+        "source": "com.homiee.helper.app-main-70:/mipmap-xxxhdpi/ic_launcher_foreground.webp"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\mipmap-anydpi-v26_ic_launcher.xml.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\mipmap-anydpi-v26\\ic_launcher.xml"
+        "merged": "com.homiee.helper.app-debug-68:/mipmap-xhdpi_ic_launcher_background.webp.flat",
+        "source": "com.homiee.helper.app-main-70:/mipmap-xhdpi/ic_launcher_background.webp"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\drawable_logotext1.png.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\drawable\\logotext1.png"
+        "merged": "com.homiee.helper.app-debug-68:/xml_network_security_config.xml.flat",
+        "source": "com.homiee.helper.app-main-70:/xml/network_security_config.xml"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\mipmap-xhdpi_ic_launcher_background.webp.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\mipmap-xhdpi\\ic_launcher_background.webp"
+        "merged": "com.homiee.helper.app-debug-68:/drawable_ic_babysitting.xml.flat",
+        "source": "com.homiee.helper.app-main-70:/drawable/ic_babysitting.xml"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\mipmap-hdpi_ic_launcher_round.webp.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\mipmap-hdpi\\ic_launcher_round.webp"
+        "merged": "com.homiee.helper.app-debug-68:/drawable_img.png.flat",
+        "source": "com.homiee.helper.app-main-70:/drawable/img.png"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\drawable_flashbg.png.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\drawable\\flashbg.png"
+        "merged": "com.homiee.helper.app-debug-68:/mipmap-mdpi_ic_launcher_round.webp.flat",
+        "source": "com.homiee.helper.app-main-70:/mipmap-mdpi/ic_launcher_round.webp"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\mipmap-xxhdpi_ic_launcher_round.webp.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\mipmap-xxhdpi\\ic_launcher_round.webp"
+        "merged": "com.homiee.helper.app-debug-68:/mipmap-xhdpi_ic_launcher.webp.flat",
+        "source": "com.homiee.helper.app-main-70:/mipmap-xhdpi/ic_launcher.webp"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\mipmap-hdpi_ic_launcher_foreground.webp.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\mipmap-hdpi\\ic_launcher_foreground.webp"
+        "merged": "com.homiee.helper.app-debug-68:/drawable_homebg.png.flat",
+        "source": "com.homiee.helper.app-main-70:/drawable/homebg.png"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\mipmap-xxhdpi_ic_launcher_background.webp.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\mipmap-xxhdpi\\ic_launcher_background.webp"
+        "merged": "com.homiee.helper.app-debug-68:/mipmap-xhdpi_ic_launcher_foreground.webp.flat",
+        "source": "com.homiee.helper.app-main-70:/mipmap-xhdpi/ic_launcher_foreground.webp"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\drawable_homebg.png.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\drawable\\homebg.png"
+        "merged": "com.homiee.helper.app-debug-68:/mipmap-hdpi_ic_launcher_foreground.webp.flat",
+        "source": "com.homiee.helper.app-main-70:/mipmap-hdpi/ic_launcher_foreground.webp"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\mipmap-xhdpi_ic_launcher_round.webp.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\mipmap-xhdpi\\ic_launcher_round.webp"
+        "merged": "com.homiee.helper.app-debug-68:/drawable_logotext.png.flat",
+        "source": "com.homiee.helper.app-main-70:/drawable/logotext.png"
     },
     {
-        "merged": "com.homiee.helper.app-debug-67:/drawable_ic_eldercare.xml.flat",
-        "source": "com.homiee.helper.app-main-69:/drawable/ic_eldercare.xml"
+        "merged": "com.homiee.helper.app-debug-68:/mipmap-mdpi_ic_launcher.webp.flat",
+        "source": "com.homiee.helper.app-main-70:/mipmap-mdpi/ic_launcher.webp"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\mipmap-xxxhdpi_ic_launcher.webp.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\mipmap-xxxhdpi\\ic_launcher.webp"
+        "merged": "com.homiee.helper.app-debug-68:/mipmap-xxhdpi_ic_launcher_foreground.webp.flat",
+        "source": "com.homiee.helper.app-main-70:/mipmap-xxhdpi/ic_launcher_foreground.webp"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\mipmap-mdpi_ic_launcher.webp.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\mipmap-mdpi\\ic_launcher.webp"
+        "merged": "com.homiee.helper.app-debug-68:/drawable_ic_eldercare.xml.flat",
+        "source": "com.homiee.helper.app-main-70:/drawable/ic_eldercare.xml"
     },
     {
-        "merged": "com.homiee.helper.app-debug-67:/drawable_ic_service_default.xml.flat",
-        "source": "com.homiee.helper.app-main-69:/drawable/ic_service_default.xml"
+        "merged": "com.homiee.helper.app-debug-68:/drawable_ic_service_default.xml.flat",
+        "source": "com.homiee.helper.app-main-70:/drawable/ic_service_default.xml"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\drawable_logotext.png.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\drawable\\logotext.png"
+        "merged": "com.homiee.helper.app-debug-68:/mipmap-mdpi_ic_launcher_foreground.webp.flat",
+        "source": "com.homiee.helper.app-main-70:/mipmap-mdpi/ic_launcher_foreground.webp"
     },
     {
-        "merged": "com.homiee.helper.app-debug-67:/drawable_ic_babysitting.xml.flat",
-        "source": "com.homiee.helper.app-main-69:/drawable/ic_babysitting.xml"
+        "merged": "com.homiee.helper.app-debug-68:/mipmap-xxhdpi_ic_launcher_background.webp.flat",
+        "source": "com.homiee.helper.app-main-70:/mipmap-xxhdpi/ic_launcher_background.webp"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\mipmap-xxxhdpi_ic_launcher_foreground.webp.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\mipmap-xxxhdpi\\ic_launcher_foreground.webp"
+        "merged": "com.homiee.helper.app-debug-68:/drawable_ic_cleaning.xml.flat",
+        "source": "com.homiee.helper.app-main-70:/drawable/ic_cleaning.xml"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\mipmap-mdpi_ic_launcher_foreground.webp.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\mipmap-mdpi\\ic_launcher_foreground.webp"
+        "merged": "com.homiee.helper.app-debug-68:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "com.homiee.helper.app-main-70:/mipmap-anydpi-v26/ic_launcher.xml"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\drawable_img.png.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\drawable\\img.png"
+        "merged": "com.homiee.helper.app-debug-68:/mipmap-xhdpi_ic_launcher_round.webp.flat",
+        "source": "com.homiee.helper.app-main-70:/mipmap-xhdpi/ic_launcher_round.webp"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\mipmap-xxxhdpi_ic_launcher_round.webp.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\mipmap-xxxhdpi\\ic_launcher_round.webp"
+        "merged": "com.homiee.helper.app-debug-68:/mipmap-xxxhdpi_ic_launcher_round.webp.flat",
+        "source": "com.homiee.helper.app-main-70:/mipmap-xxxhdpi/ic_launcher_round.webp"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\mipmap-xxhdpi_ic_launcher.webp.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\mipmap-xxhdpi\\ic_launcher.webp"
+        "merged": "com.homiee.helper.app-debug-68:/mipmap-xxhdpi_ic_launcher.webp.flat",
+        "source": "com.homiee.helper.app-main-70:/mipmap-xxhdpi/ic_launcher.webp"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\mipmap-mdpi_ic_launcher_background.webp.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\mipmap-mdpi\\ic_launcher_background.webp"
+        "merged": "com.homiee.helper.app-debug-68:/drawable_flashbg.png.flat",
+        "source": "com.homiee.helper.app-main-70:/drawable/flashbg.png"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\mipmap-hdpi_ic_launcher.webp.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\mipmap-hdpi\\ic_launcher.webp"
+        "merged": "com.homiee.helper.app-debug-68:/drawable_ic_cooking.xml.flat",
+        "source": "com.homiee.helper.app-main-70:/drawable/ic_cooking.xml"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\drawable_header.png.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\drawable\\header.png"
+        "merged": "com.homiee.helper.app-debug-68:/mipmap-hdpi_ic_launcher_background.webp.flat",
+        "source": "com.homiee.helper.app-main-70:/mipmap-hdpi/ic_launcher_background.webp"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\xml_network_security_config.xml.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\xml\\network_security_config.xml"
+        "merged": "com.homiee.helper.app-debug-68:/drawable_logotext1.png.flat",
+        "source": "com.homiee.helper.app-main-70:/drawable/logotext1.png"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\mipmap-xxxhdpi_ic_launcher_background.webp.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\mipmap-xxxhdpi\\ic_launcher_background.webp"
+        "merged": "com.homiee.helper.app-debug-68:/drawable_header.png.flat",
+        "source": "com.homiee.helper.app-main-70:/drawable/header.png"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\mipmap-xhdpi_ic_launcher_foreground.webp.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\mipmap-xhdpi\\ic_launcher_foreground.webp"
+        "merged": "com.homiee.helper.app-debug-68:/mipmap-mdpi_ic_launcher_background.webp.flat",
+        "source": "com.homiee.helper.app-main-70:/mipmap-mdpi/ic_launcher_background.webp"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\mipmap-anydpi-v26_ic_launcher_round.xml.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\mipmap-anydpi-v26\\ic_launcher_round.xml"
+        "merged": "com.homiee.helper.app-debug-68:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "com.homiee.helper.app-main-70:/mipmap-anydpi-v26/ic_launcher_round.xml"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\drawable_img_1.png.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\drawable\\img_1.png"
+        "merged": "com.homiee.helper.app-debug-68:/mipmap-xxhdpi_ic_launcher_round.webp.flat",
+        "source": "com.homiee.helper.app-main-70:/mipmap-xxhdpi/ic_launcher_round.webp"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\mipmap-xxhdpi_ic_launcher_foreground.webp.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\mipmap-xxhdpi\\ic_launcher_foreground.webp"
+        "merged": "com.homiee.helper.app-debug-68:/mipmap-xxxhdpi_ic_launcher.webp.flat",
+        "source": "com.homiee.helper.app-main-70:/mipmap-xxxhdpi/ic_launcher.webp"
     },
     {
-        "merged": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-debug-67:\\mipmap-hdpi_ic_launcher_background.webp.flat",
-        "source": "C:\\Users\\Tulika Mishra\\.gradle\\daemon\\9.0-milestone-1\\com.homiee.helper.app-main-69:\\mipmap-hdpi\\ic_launcher_background.webp"
+        "merged": "com.homiee.helper.app-debug-68:/mipmap-xxxhdpi_ic_launcher_background.webp.flat",
+        "source": "com.homiee.helper.app-main-70:/mipmap-xxxhdpi/ic_launcher_background.webp"
     }
 ]

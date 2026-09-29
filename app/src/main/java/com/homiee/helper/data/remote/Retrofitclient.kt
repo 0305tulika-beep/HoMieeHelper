@@ -21,6 +21,13 @@ object RetrofitClient {
         appContext = context.applicationContext
     }
 
+    /** Turns a backend path like "/media/helper_photos/x.jpg" into a full URL. */
+    fun absoluteUrl(path: String?): String? {
+        if (path.isNullOrBlank()) return null
+        if (path.startsWith("http://") || path.startsWith("https://")) return path
+        return BASE_URL.trimEnd('/') + "/" + path.trimStart('/')
+    }
+
     private val retrofit: Retrofit by lazy {
         val context = requireNotNull(appContext) {
             "RetrofitClient.init(context) must be called before use — call it from " +

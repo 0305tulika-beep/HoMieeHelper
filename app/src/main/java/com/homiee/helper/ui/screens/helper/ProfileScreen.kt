@@ -40,6 +40,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.homiee.helper.data.model.HelperProfileResponse
+import com.homiee.helper.data.remote.RetrofitClient
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.SubcomposeAsyncImage
 import com.homiee.helper.ui.components.*
 import com.homiee.helper.ui.theme.*
 import com.homiee.helper.viewmodel.AccountActionUiState
@@ -57,6 +60,7 @@ private data class ServiceCharge(val label: String, val price: String)
 private data class ProfileUi(
     val name: String,
     val initials: String,
+    val photoUrl: String?,
     val about: String,
     val dob: String,
     val address: String,
@@ -129,6 +133,7 @@ private fun HelperProfileResponse.toUi(): ProfileUi {
     return ProfileUi(
         name = fullName.ifBlank { "Helper" },
         initials = initials,
+        photoUrl = RetrofitClient.absoluteUrl(profile_photo),
         about = about?.takeIf { it.isNotBlank() } ?: "—",
         dob = formatDob(date_of_birth),
         address = address,
@@ -151,6 +156,7 @@ private val cardElevation = Modifier.shadow(elevation = 1.dp, shape = RoundedCor
 @Composable
 fun ProfileScreen(
     profileViewModel: ProfileViewModel,
+    email: String? = null,
     onViewVerifiedDocuments: () -> Unit,
     onViewTotalEarnings: () -> Unit,
     accountViewModel: AccountActionViewModel? = null,
@@ -196,6 +202,7 @@ fun ProfileScreen(
                         val ui = remember(profile) { profile.toUi() }
                         ProfileContent(
                             ui = ui,
+                            email = email,
                             onViewVerifiedDocuments = onViewVerifiedDocuments,
                             onViewTotalEarnings = onViewTotalEarnings,
                             onEditProfilePhoto = onEditProfilePhoto
@@ -239,6 +246,7 @@ fun ProfileScreen(
 @Composable
 private fun ProfileContent(
     ui: ProfileUi,
+    email: String?,
     onViewVerifiedDocuments: () -> Unit,
     onViewTotalEarnings: () -> Unit,
     onEditProfilePhoto: () -> Unit
@@ -258,7 +266,7 @@ private fun ProfileContent(
         SectionCard(modifier = cardElevation) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box {
-                    InitialsAvatar(initials = ui.initials, size = 64.dp)
+                    ProfileAvatar(photoUrl = ui.photoUrl, initials = ui.initials, size = 64.dp)
                     Box(
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
@@ -280,6 +288,10 @@ private fun ProfileContent(
                 Spacer(modifier = Modifier.width(14.dp))
                 Column {
                     Text(ui.name, fontSize = 17.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                    if (!email.isNullOrBlank()) {
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(email, fontSize = 12.sp, color = TextSecondary)
+                    }
                     Spacer(modifier = Modifier.height(6.dp))
                     StatusChip(text = "Verified", background = SuccessGreenBg, textColor = SuccessGreen)
                     Spacer(modifier = Modifier.height(4.dp))
@@ -411,6 +423,26 @@ private fun ProfileContent(
 
         Spacer(modifier = Modifier.height(24.dp))
     }
+}
+
+/**
+ * Circular profile photo loaded from the backend. While loading, or if there's
+ * no photo / the download fails, it falls back to the initials avatar.
+ */
+@Composable
+private fun ProfileAvatar(photoUrl: String?, initials: String, size: androidx.compose.ui.unit.Dp) {
+    if (photoUrl.isNullOrBlank()) {
+        InitialsAvatar(initials = initials, size = size)
+        return
+    }
+    SubcomposeAsyncImage(
+        model = photoUrl,
+        contentDescription = "Profile photo",
+        contentScale = ContentScale.Crop,
+        modifier = Modifier.size(size).clip(CircleShape),
+        loading = { InitialsAvatar(initials = initials, size = size) },
+        error = { InitialsAvatar(initials = initials, size = size) }
+    )
 }
 
 /** Small icon + bold title used at the top of every profile section card. */

@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.homiee.helper.app-mergeDebugResources-65:/values-hu/values-hu.xml",
+            "outputFile": "com.homiee.helper.app-mergeDebugResources-66:/values-hu/values-hu.xml",
             "map": [
                 {
                     "source": "C:\\Users\\Tulika Mishra\\.gradle\\caches\\9.0-milestone-1\\transforms\\8de6db10d366184ad3260ee4e8dde44f\\transformed\\play-services-base-18.5.0\\res\\values-hu\\values.xml",

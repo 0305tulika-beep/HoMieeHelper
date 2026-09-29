@@ -138,7 +138,19 @@ fun ProfileScreenPreview() {
 @Composable
 fun VerifiedDocumentsScreenPreview() {
     HomieeHelperTheme {
-        VerifiedDocumentsScreen(onBackClick = {})
+        VerifiedDocumentsBody(
+            profile = HelperProfileResponse(
+                govt_id_type = "aadhaar",
+                govt_id_number = "1234 5678 9012",
+                front_card = "/media/helper_docs/front/aadhaar.jpg",
+                back_card = "/media/helper_docs/back/aadhaar.jpg",
+                police_verification_cert = "/media/helper_docs/police/cert.pdf"
+            ),
+            isLoading = false,
+            errorMessage = null,
+            onRetry = {},
+            onBackClick = {}
+        )
     }
 }
 

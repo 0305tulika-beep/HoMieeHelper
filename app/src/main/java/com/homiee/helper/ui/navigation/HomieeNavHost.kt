@@ -3,6 +3,7 @@ package com.homiee.helper.ui.navigation
 import android.app.Activity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -330,6 +331,8 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
                 viewModel(factory = AccountActionViewModel.Factory(context))
             val profileViewModel: ProfileViewModel =
                 viewModel(factory = ProfileViewModel.Factory(context))
+            // Email saved at sign-up (OTP verify) / login
+            val email = remember { TokenManager.getInstance(context).getUserEmail() }
 
             val goToLoginCleared: () -> Unit = {
                 navController.navigate(Screen.Login.route) {
@@ -339,6 +342,7 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
 
             ProfileScreen(
                 profileViewModel = profileViewModel,
+                email = email,
                 onViewVerifiedDocuments = { navController.navigate(Screen.VerifiedDocuments.route) },
                 onViewTotalEarnings = { navController.navigate(Screen.TotalEarnings.route) },
                 accountViewModel = accountViewModel,
@@ -349,10 +353,21 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
             )
         }
 
-        composable(Screen.VerifiedDocuments.route) {
-            VerifiedDocumentsScreen(onBackClick = { navController.popBackStack() })
+        composable(Screen.VerifiedDocuments.route) { backStackEntry ->
+            val context = LocalContext.current
+            val profileEntry = remember(backStackEntry) {
+                navController.getBackStackEntry(Screen.Profile.route)
+            }
+            val profileViewModel: ProfileViewModel =
+                viewModel(
+                    viewModelStoreOwner = profileEntry,
+                    factory = ProfileViewModel.Factory(context)
+                )
+            VerifiedDocumentsScreen(
+                profileViewModel = profileViewModel,
+                onBackClick = { navController.popBackStack() }
+            )
         }
-
         composable(Screen.TotalEarnings.route) {
             TotalEarningsScreen(onBackClick = { navController.popBackStack() })
         }

@@ -118,6 +118,7 @@ class UserDetailsRepository(private val context: Context) {
 
     suspend fun getProfile(): ApiResult<HelperProfileResponse> = call { api.getProfile() }
 
+
     // ── Steps 1-3 ───────────────────────────────────────────────────────────
 
     suspend fun submitIdentity(

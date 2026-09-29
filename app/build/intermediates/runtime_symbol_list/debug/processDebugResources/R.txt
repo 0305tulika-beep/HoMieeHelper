@@ -3186,6 +3186,7 @@ int id clear_text 0x7f080068
 int id clip_horizontal 0x7f080069
 int id clip_vertical 0x7f08006a
 int id clockwise 0x7f08006b
+int id coil_request_manager 0x7f0801d4
 int id collapseActionView 0x7f08006c
 int id compose_view_saveable_id_tag 0x7f08006d
 int id compress 0x7f08006e
