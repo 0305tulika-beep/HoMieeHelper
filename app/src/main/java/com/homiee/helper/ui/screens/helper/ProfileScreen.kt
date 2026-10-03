@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -187,6 +188,7 @@ fun ProfileScreen(
     onAccountCleared: () -> Unit,
     onContactSupport: () -> Unit,
     onEditProfilePhoto: () -> Unit = {},
+    onEditProfile: () -> Unit = {},          // NEW
     currentRoute: String? = null,
     onNavItemClick: (HelperNavItem) -> Unit = {}
 ) {
@@ -229,7 +231,8 @@ fun ProfileScreen(
                             email = email,
                             onViewVerifiedDocuments = onViewVerifiedDocuments,
                             onViewTotalEarnings = onViewTotalEarnings,
-                            onEditProfilePhoto = onEditProfilePhoto
+                            onEditProfilePhoto = onEditProfilePhoto,
+                            onEditProfile = onEditProfile
                         )
                     }
                     profileViewModel.isLoading -> {
@@ -262,7 +265,8 @@ fun ProfileScreen(
             onDismiss = { settingsOpen = false },
             accountViewModel = accountViewModel,
             onAccountCleared = onAccountCleared,
-            onContactSupport = onContactSupport
+            onContactSupport = onContactSupport,
+            onEditProfile = onEditProfile
         )
     }
 }
@@ -274,7 +278,8 @@ private fun ProfileContent(
     email: String?,
     onViewVerifiedDocuments: () -> Unit,
     onViewTotalEarnings: () -> Unit,
-    onEditProfilePhoto: () -> Unit
+    onEditProfilePhoto: () -> Unit,
+    onEditProfile: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -319,7 +324,18 @@ private fun ProfileContent(
                     }
                     Spacer(modifier = Modifier.height(6.dp))
                     StatusChip(text = "Verified", background = SuccessGreenBg, textColor = SuccessGreen)
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedButton(
+                        onClick = onEditProfile,
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(1.dp, TealPrimary),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp),
+                        modifier = Modifier.height(30.dp)
+                    ) {
+                        Icon(Icons.Filled.Edit, contentDescription = null, tint = TealPrimary, modifier = Modifier.size(14.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Edit Profile", fontSize = 12.sp, color = TealPrimary, fontWeight = FontWeight.SemiBold)
+                    }
                 }
             }
         }
@@ -521,7 +537,8 @@ private fun SettingsPanel(
     onDismiss: () -> Unit,
     accountViewModel: AccountActionViewModel?,
     onAccountCleared: () -> Unit,
-    onContactSupport: () -> Unit
+    onContactSupport: () -> Unit,
+    onEditProfile: () -> Unit
 ) {
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showDeactivateDialog by remember { mutableStateOf(false) }
@@ -601,6 +618,16 @@ private fun SettingsPanel(
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
+                SettingsRow(
+                    icon = Icons.Filled.Edit,
+                    label = "Edit Profile",
+                    subtitle = "Update your personal details",
+                    tint = TealPrimary,
+                    onClick = {
+                        onDismiss()
+                        onEditProfile()
+                    }
+                )
                 SettingsRow(
                     icon = Icons.AutoMirrored.Filled.Logout,
                     label = if (uiState.activeAction == AccountAction.LOGOUT) "Please wait..." else "Logout",
