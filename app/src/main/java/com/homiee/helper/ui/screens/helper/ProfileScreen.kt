@@ -53,6 +53,9 @@ import com.homiee.helper.viewmodel.ProfileViewModel
 import java.text.SimpleDateFormat
 import java.util.Locale
 
+// ── Colors ──────────────────────────────────────────────────────────────────
+private val ScrimColor = Color(0x66000000)   // black @ 40%
+
 // ── UI model built from the GET profile response ────────────────────────────
 
 private data class ServiceCharge(val label: String, val price: String)
@@ -109,6 +112,24 @@ private fun experienceLabel(years: Int?): String = when {
     else -> "5+ years"
 }
 
+private val ALSO_SPEAKS_REGEX = Regex("""(?im)^\s*also\s+speaks?\s*[:\-]?\s*(.+)$""")
+
+/**
+ * The language form can store a typed "other" language inside the about text
+ * as an "Also speaks: X, Y" line. This pulls that line out so it can be shown
+ * in Languages Spoken instead. Returns (clean about text, extra languages).
+ */
+private fun splitAbout(raw: String?): Pair<String, List<String>> {
+    if (raw.isNullOrBlank()) return "" to emptyList()
+    val extra = ALSO_SPEAKS_REGEX.findAll(raw)
+        .flatMap { it.groupValues[1].split(",", "&", "/", " and ").asSequence() }
+        .map { it.trim().trimEnd('.') }
+        .filter { it.isNotBlank() }
+        .toList()
+    val cleaned = raw.replace(ALSO_SPEAKS_REGEX, "").trim()
+    return cleaned to extra
+}
+
 private fun HelperProfileResponse.toUi(): ProfileUi {
     val fullName = full_name.orEmpty().trim()
     val initials = fullName.split(" ")
@@ -130,18 +151,21 @@ private fun HelperProfileResponse.toUi(): ProfileUi {
     val start = formatTime(start_time)
     val end = formatTime(end_time)
 
+    val (aboutText, otherLanguages) = splitAbout(about)
+
     return ProfileUi(
         name = fullName.ifBlank { "Helper" },
         initials = initials,
         photoUrl = RetrofitClient.absoluteUrl(profile_photo),
-        about = about?.takeIf { it.isNotBlank() } ?: "—",
+        about = aboutText.ifBlank { "—" },
         dob = formatDob(date_of_birth),
         address = address,
         services = service_prices.orEmpty().mapNotNull { item ->
             val name = item.service?.name?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
             ServiceCharge(name, "₹ ${formatPrice(item.price_per_hour)} / Hour")
         },
-        languages = languages_spoken.orEmpty().map { it.name }.filter { it.isNotBlank() },
+        languages = (languages_spoken.orEmpty().map { it.name }.filter { it.isNotBlank() } + otherLanguages)
+            .distinctBy { it.lowercase() },
         experience = experienceLabel(years_of_experience),
         workingDays = working_days.orEmpty().map { it.lowercase() },
         workingSlot = if (start.isNotBlank() && end.isNotBlank()) "$start  -  $end" else "—",
@@ -243,6 +267,7 @@ fun ProfileScreen(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ProfileContent(
     ui: ProfileUi,
@@ -355,11 +380,20 @@ private fun ProfileContent(
             if (ui.languages.isEmpty()) {
                 Text("—", fontSize = 12.sp, color = TextSecondary)
             } else {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                // FlowRow wraps chips onto the next line instead of running off the card.
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     ui.languages.forEach { lang ->
                         Box(
-                            modifier = Modifier.clip(RoundedCornerShape(50)).background(TealPale).padding(horizontal = 12.dp, vertical = 6.dp)
-                        ) { Text(lang, fontSize = 12.sp, color = TealPrimaryDark, fontWeight = FontWeight.Medium) }
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(50))
+                                .background(TealPale)
+                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                        ) {
+                            Text(lang, fontSize = 12.sp, color = TealPrimaryDark, fontWeight = FontWeight.Medium)
+                        }
                     }
                 }
             }
@@ -512,7 +546,7 @@ private fun SettingsPanel(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.4f))
+                    .background(ScrimColor)
                     .clickable(
                         indication = null,
                         interactionSource = remember { MutableInteractionSource() }
