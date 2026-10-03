@@ -14,45 +14,8 @@ import androidx.compose.ui.unit.sp
 import com.homiee.helper.ui.components.*
 import com.homiee.helper.ui.theme.SosRed
 import com.homiee.helper.viewmodel.AvailabilityViewModel
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 private val days = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
-
-// Display day -> backend day code (working_days: [String]). Confirmed
-// lowercase 3-letter codes from the API doc example ("mon", "tue", ...).
-private val dayCodeMap = mapOf(
-    "Mon" to "mon", "Tue" to "tue", "Wed" to "wed", "Thu" to "thu",
-    "Fri" to "fri", "Sat" to "sat", "Sun" to "sun"
-)
-
-// Ordered earliest -> latest, so the list index can be used to compare times.
-private val timeSlots = listOf(
-    "6:00 AM", "7:00 AM", "8:00 AM", "9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM",
-    "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM", "8:00 PM"
-)
-
-// API expects 24-hour "HH:mm:ss" (e.g. "09:00:00"); our dropdown shows
-// 12-hour labels, so convert on submit.
-private fun to24HourSeconds(label: String): String {
-    return try {
-        val input = SimpleDateFormat("h:mm a", Locale.US)
-        val output = SimpleDateFormat("HH:mm:ss", Locale.US)
-        output.format(input.parse(label)!!)
-    } catch (e: Exception) {
-        "00:00:00"
-    }
-}
-
-@Composable
-private fun ErrorText(message: String) {
-    Text(
-        text = message,
-        fontSize = 12.sp,
-        color = SosRed,
-        fontWeight = FontWeight.Medium
-    )
-}
 
 @Composable
 fun AvailabilityScreen(
@@ -60,31 +23,6 @@ fun AvailabilityScreen(
     onBack: () -> Unit,
     onContinue: () -> Unit
 ) {
-    // No days preselected.
-    val selectedDays = remember { mutableStateListOf<String>() }
-    var startTime by remember { mutableStateOf("") }
-    var endTime by remember { mutableStateOf("") }
-
-    // Errors only show after the user taps Continue once.
-    var showErrors by remember { mutableStateOf(false) }
-
-    // ---- Time logic ----
-    val startIndex = timeSlots.indexOf(startTime) // -1 if not chosen
-    val endIndex = timeSlots.indexOf(endTime)     // -1 if not chosen
-
-    // Only offer times that keep start strictly before end.
-    val startOptions =
-        if (endIndex >= 0) timeSlots.filterIndexed { i, _ -> i < endIndex } else timeSlots
-    val endOptions =
-        if (startIndex >= 0) timeSlots.filterIndexed { i, _ -> i > startIndex } else timeSlots
-
-    // ---- Validation ----
-    val daysValid = selectedDays.isNotEmpty()
-    val startValid = startIndex >= 0
-    val endValid = endIndex >= 0
-    val orderValid = !startValid || !endValid || startIndex < endIndex
-    val formValid = daysValid && startValid && endValid && orderValid
-
     FormScaffold(
         title = "Availability",
         step = 6,
@@ -103,29 +41,16 @@ fun AvailabilityScreen(
                 }
                 PrimaryButton(
                     text = if (viewModel.isLoading) "Saving..." else "Continue",
-                    onClick = {
-                        showErrors = true
-                        if (!formValid) return@PrimaryButton
-
-                        viewModel.submit(
-                            workingDays = selectedDays.mapNotNull { dayCodeMap[it] },
-                            startTime = to24HourSeconds(startTime),
-                            endTime = to24HourSeconds(endTime),
-                            onSuccess = onContinue
-                        )
-                    },
-                    enabled = !viewModel.isLoading
+                    onClick = { viewModel.submit(onSuccess = onContinue) },
+                    enabled = !viewModel.isLoading && viewModel.isFormValid
                 )
             }
         }
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             FieldLabel("Working Days", helper = "Select the days you are available")
-            DaySelector(days, selectedDays.toSet()) { day ->
-                if (day in selectedDays) selectedDays.remove(day) else selectedDays.add(day)
-            }
-            if (showErrors && !daysValid) {
-                ErrorText("Select at least one working day")
+            DaySelector(days, viewModel.selectedDays.toSet()) { day ->
+                viewModel.toggleDay(day)
             }
         }
 
@@ -137,35 +62,21 @@ fun AvailabilityScreen(
                     DropdownField(
                         placeholder = "Select start time",
                         icon = Icons.Filled.AccessTime,
-                        options = startOptions,
-                        selected = startTime,
-                        onSelect = { picked ->
-                            startTime = picked
-                            // If the chosen end is no longer after the new start, clear it.
-                            val newStart = timeSlots.indexOf(picked)
-                            if (endIndex in 0..newStart) endTime = ""
-                        }
+                        options = viewModel.startOptions,
+                        selected = viewModel.startTime,
+                        onSelect = { viewModel.onStartSelected(it) }
                     )
-                    if (showErrors && !startValid) {
-                        ErrorText("Select start time")
-                    }
                 }
                 Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     FieldLabel("End Time")
                     DropdownField(
                         placeholder = "Select end time",
                         icon = Icons.Filled.AccessTime,
-                        options = endOptions,
-                        selected = endTime,
-                        onSelect = { endTime = it }
+                        options = viewModel.endOptions,
+                        selected = viewModel.endTime,
+                        onSelect = { viewModel.onEndSelected(it) }
                     )
-                    if (showErrors && !endValid) {
-                        ErrorText("Select end time")
-                    }
                 }
-            }
-            if (showErrors && !orderValid) {
-                ErrorText("Start time must be before end time")
             }
         }
 

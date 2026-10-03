@@ -11,6 +11,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.homiee.helper.data.local.TokenManager
@@ -51,6 +52,11 @@ import com.homiee.helper.viewmodel.DocumentsViewModel
 import com.homiee.helper.viewmodel.ExperienceAboutViewModel
 import com.homiee.helper.viewmodel.PersonalInformationViewModel
 import com.homiee.helper.viewmodel.ServicesPricingViewModel
+
+// Parent graph for the 6 onboarding steps. The form ViewModels are scoped to THIS graph's
+// back stack entry, so typed values survive going back and forward between steps, and are
+// cleared automatically when the graph leaves the back stack (onboarding done / logout).
+private const val ONBOARDING_GRAPH = "onboarding_graph"
 
 @Composable
 fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
@@ -160,80 +166,119 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
         }
 
         // ================= ONBOARDING / FORM FLOW (Steps 1-6) =================
+        // Nested graph: all six steps share one parent back stack entry, and every form
+        // ViewModel is created against that entry (see ONBOARDING_GRAPH above).
 
-        composable(Screen.PersonalInformation.route) {
-            val activity = LocalContext.current as? Activity
-            val context = LocalContext.current
-            val personalInfoViewModel: PersonalInformationViewModel =
-                viewModel(factory = PersonalInformationViewModel.Factory(context))
-            PersonalInformationScreen(
-                viewModel = personalInfoViewModel,
-                // First form screen: stack was cleared via popUpTo(0) on the way here,
-                // so there's nothing to pop back into — close the app instead.
-                onBack = { activity?.finish() },
-                onContinue = { navController.navigate(Screen.AddressInformation.route) }
-            )
-        }
+        navigation(
+            startDestination = Screen.PersonalInformation.route,
+            route = ONBOARDING_GRAPH
+        ) {
 
-        composable(Screen.AddressInformation.route) {
-            val context = LocalContext.current
-            val addressViewModel: AddressInformationViewModel =
-                viewModel(factory = AddressInformationViewModel.Factory(context))
-            AddressInformationScreen(
-                viewModel = addressViewModel,
-                onBack = { navController.popBackStack() },
-                onContinue = { navController.navigate(Screen.Documents.route) }
-            )
-        }
-
-        composable(Screen.Documents.route) {
-            val context = LocalContext.current
-            val documentsViewModel: DocumentsViewModel =
-                viewModel(factory = DocumentsViewModel.Factory(context))
-            DocumentsScreen(
-                viewModel = documentsViewModel,
-                onBack = { navController.popBackStack() },
-                onContinue = { navController.navigate(Screen.ServicesPricing.route) }
-            )
-        }
-
-        composable(Screen.ServicesPricing.route) {
-            val context = LocalContext.current
-            val servicesPricingViewModel: ServicesPricingViewModel =
-                viewModel(factory = ServicesPricingViewModel.Factory(context))
-            ServicesPricingScreen(
-                viewModel = servicesPricingViewModel,
-                onBack = { navController.popBackStack() },
-                onContinue = { navController.navigate(Screen.ExperienceAbout.route) }
-            )
-        }
-
-        composable(Screen.ExperienceAbout.route) {
-            val context = LocalContext.current
-            val experienceAboutViewModel: ExperienceAboutViewModel =
-                viewModel(factory = ExperienceAboutViewModel.Factory(context))
-            ExperienceAboutScreen(
-                viewModel = experienceAboutViewModel,
-                onBack = { navController.popBackStack() },
-                onContinue = { navController.navigate(Screen.Availability.route) }
-            )
-        }
-
-        composable(Screen.Availability.route) {
-            val context = LocalContext.current
-            val availabilityViewModel: AvailabilityViewModel =
-                viewModel(factory = AvailabilityViewModel.Factory(context))
-            AvailabilityScreen(
-                viewModel = availabilityViewModel,
-                onBack = { navController.popBackStack() },
-                onContinue = {
-                    TokenManager.getInstance(context).setOnboardingComplete(true)
-                    // Onboarding fully done — clears the whole form stack behind the user.
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(0) { inclusive = true }
-                    }
+            composable(Screen.PersonalInformation.route) { backStackEntry ->
+                val context = LocalContext.current
+                val activity = context as? Activity
+                val parentEntry = remember(backStackEntry) {
+                    navController.getBackStackEntry(ONBOARDING_GRAPH)
                 }
-            )
+                val personalInfoViewModel: PersonalInformationViewModel = viewModel(
+                    viewModelStoreOwner = parentEntry,
+                    factory = PersonalInformationViewModel.Factory(context)
+                )
+                PersonalInformationScreen(
+                    viewModel = personalInfoViewModel,
+                    // First form screen: stack was cleared via popUpTo(0) on the way here,
+                    // so there's nothing to pop back into — close the app instead.
+                    onBack = { activity?.finish() },
+                    onContinue = { navController.navigate(Screen.AddressInformation.route) }
+                )
+            }
+
+            composable(Screen.AddressInformation.route) { backStackEntry ->
+                val context = LocalContext.current
+                val parentEntry = remember(backStackEntry) {
+                    navController.getBackStackEntry(ONBOARDING_GRAPH)
+                }
+                val addressViewModel: AddressInformationViewModel = viewModel(
+                    viewModelStoreOwner = parentEntry,
+                    factory = AddressInformationViewModel.Factory(context)
+                )
+                AddressInformationScreen(
+                    viewModel = addressViewModel,
+                    onBack = { navController.popBackStack() },
+                    onContinue = { navController.navigate(Screen.Documents.route) }
+                )
+            }
+
+            composable(Screen.Documents.route) { backStackEntry ->
+                val context = LocalContext.current
+                val parentEntry = remember(backStackEntry) {
+                    navController.getBackStackEntry(ONBOARDING_GRAPH)
+                }
+                val documentsViewModel: DocumentsViewModel = viewModel(
+                    viewModelStoreOwner = parentEntry,
+                    factory = DocumentsViewModel.Factory(context)
+                )
+                DocumentsScreen(
+                    viewModel = documentsViewModel,
+                    onBack = { navController.popBackStack() },
+                    onContinue = { navController.navigate(Screen.ServicesPricing.route) }
+                )
+            }
+
+            composable(Screen.ServicesPricing.route) { backStackEntry ->
+                val context = LocalContext.current
+                val parentEntry = remember(backStackEntry) {
+                    navController.getBackStackEntry(ONBOARDING_GRAPH)
+                }
+                val servicesPricingViewModel: ServicesPricingViewModel = viewModel(
+                    viewModelStoreOwner = parentEntry,
+                    factory = ServicesPricingViewModel.Factory(context)
+                )
+                ServicesPricingScreen(
+                    viewModel = servicesPricingViewModel,
+                    onBack = { navController.popBackStack() },
+                    onContinue = { navController.navigate(Screen.ExperienceAbout.route) }
+                )
+            }
+
+            composable(Screen.ExperienceAbout.route) { backStackEntry ->
+                val context = LocalContext.current
+                val parentEntry = remember(backStackEntry) {
+                    navController.getBackStackEntry(ONBOARDING_GRAPH)
+                }
+                val experienceAboutViewModel: ExperienceAboutViewModel = viewModel(
+                    viewModelStoreOwner = parentEntry,
+                    factory = ExperienceAboutViewModel.Factory(context)
+                )
+                ExperienceAboutScreen(
+                    viewModel = experienceAboutViewModel,
+                    onBack = { navController.popBackStack() },
+                    onContinue = { navController.navigate(Screen.Availability.route) }
+                )
+            }
+
+            composable(Screen.Availability.route) { backStackEntry ->
+                val context = LocalContext.current
+                val parentEntry = remember(backStackEntry) {
+                    navController.getBackStackEntry(ONBOARDING_GRAPH)
+                }
+                val availabilityViewModel: AvailabilityViewModel = viewModel(
+                    viewModelStoreOwner = parentEntry,
+                    factory = AvailabilityViewModel.Factory(context)
+                )
+                AvailabilityScreen(
+                    viewModel = availabilityViewModel,
+                    onBack = { navController.popBackStack() },
+                    onContinue = {
+                        TokenManager.getInstance(context).setOnboardingComplete(true)
+                        // Onboarding fully done — clears the whole form stack behind the user
+                        // (this also clears the onboarding graph and all its form ViewModels).
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                )
+            }
         }
 
         // ================= HELPER DASHBOARD FLOW (bottom-nav tabs) =================

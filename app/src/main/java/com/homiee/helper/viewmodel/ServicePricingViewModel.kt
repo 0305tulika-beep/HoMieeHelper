@@ -2,6 +2,7 @@ package com.homiee.helper.viewmodel
 
 import android.content.Context
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -23,6 +24,11 @@ class ServicesPricingViewModel(
     // Real services from the backend catalog (with real ids).
     var services by mutableStateOf<List<ServiceDto>>(emptyList()); private set
     var isLoadingServices by mutableStateOf(true); private set
+
+    // ---- Form state (lives here so it survives navigating away and back) ----
+    // Both keyed by the real backend service id.
+    val checkedState = mutableStateMapOf<Int, Boolean>()
+    val amountState = mutableStateMapOf<Int, String>()
 
     init {
         loadServices()

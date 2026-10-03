@@ -17,15 +17,6 @@ import com.homiee.helper.ui.components.*
 import com.homiee.helper.ui.theme.*
 import com.homiee.helper.viewmodel.ExperienceAboutViewModel
 
-// Display label -> backend years_of_experience (Int).
-private val experienceOptions = listOf(
-    "Less than 1 year" to 0,
-    "1-2 years" to 1,
-    "3-5 years" to 3,
-    "5+ years" to 5
-)
-private val experienceLabels = experienceOptions.map { it.first }
-
 @Composable
 private fun FieldError(message: String) {
     Text(
@@ -42,25 +33,6 @@ fun ExperienceAboutScreen(
     onBack: () -> Unit,
     onContinue: () -> Unit
 ) {
-    var experience by remember { mutableStateOf("") }
-    val selectedLanguageIds = remember { mutableStateListOf<Int>() }
-    var otherChecked by remember { mutableStateOf(false) }
-    var otherLanguage by remember { mutableStateOf("") }
-    var aboutYou by remember { mutableStateOf("") }
-    var showErrors by remember { mutableStateOf(false) }
-
-    val experienceValid = experience.isNotBlank()
-    val otherValid = !otherChecked || otherLanguage.isNotBlank()
-    val languagesValid =
-        (selectedLanguageIds.isNotEmpty() || (otherChecked && otherLanguage.isNotBlank())) && otherValid
-    val aboutValid = aboutYou.isNotBlank()
-    val formValid = experienceValid && languagesValid && aboutValid
-
-    val languageErrorText = when {
-        otherChecked && otherLanguage.isBlank() -> "Please enter the language"
-        else -> "Select at least one language"
-    }
-
     FormScaffold(
         title = "Experience & About You",
         step = 5,
@@ -79,22 +51,8 @@ fun ExperienceAboutScreen(
                 }
                 PrimaryButton(
                     text = if (viewModel.isLoading) "Saving..." else "Continue",
-                    onClick = {
-                        showErrors = true
-                        if (!formValid) return@PrimaryButton
-
-                        val years = experienceOptions.first { it.first == experience }.second
-                        val about = if (otherChecked && otherLanguage.isNotBlank()) {
-                            "${aboutYou.trim()}\n\nAlso speaks: ${otherLanguage.trim()}"
-                        } else aboutYou.trim()
-                        viewModel.submit(
-                            yearsOfExperience = years,
-                            languagesSpoken = selectedLanguageIds.toList(),
-                            about = about,
-                            onSuccess = onContinue
-                        )
-                    },
-                    enabled = !viewModel.isLoading
+                    onClick = { viewModel.submit(onSuccess = onContinue) },
+                    enabled = !viewModel.isLoading && viewModel.isFormValid
                 )
             }
         }
@@ -104,13 +62,10 @@ fun ExperienceAboutScreen(
             DropdownField(
                 placeholder = "Select years of experience",
                 icon = Icons.Filled.WorkOutline,
-                options = experienceLabels,
-                selected = experience,
-                onSelect = { experience = it }
+                options = ExperienceAboutViewModel.experienceLabels,
+                selected = viewModel.experience,
+                onSelect = { viewModel.onExperienceSelected(it) }
             )
-            if (showErrors && !experienceValid) {
-                FieldError("Please select your years of experience")
-            }
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -136,11 +91,8 @@ fun ExperienceAboutScreen(
                             rowItems.forEach { lang ->
                                 ChipCheckbox(
                                     label = lang.name,
-                                    checked = lang.id in selectedLanguageIds,
-                                    onCheckedChange = {
-                                        if (it) selectedLanguageIds.add(lang.id)
-                                        else selectedLanguageIds.remove(lang.id)
-                                    },
+                                    checked = lang.id in viewModel.selectedLanguageIds,
+                                    onCheckedChange = { viewModel.onLanguageToggled(lang.id, it) },
                                     modifier = Modifier.weight(1f)
                                 )
                             }
@@ -151,54 +103,45 @@ fun ExperienceAboutScreen(
 
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 Checkbox(
-                    checked = otherChecked,
-                    onCheckedChange = {
-                        otherChecked = it
-                        if (!it) otherLanguage = ""
-                    },
+                    checked = viewModel.otherChecked,
+                    onCheckedChange = { viewModel.onOtherCheckedChange(it) },
                     colors = CheckboxDefaults.colors(checkedColor = TealPrimary)
                 )
                 Text("Other", fontSize = 13.sp, color = TextPrimary)
 
-                if (otherChecked) {
+                if (viewModel.otherChecked) {
                     Spacer(modifier = Modifier.width(10.dp))
                     HomieeTextField(
-                        otherLanguage,
-                        { otherLanguage = it },
+                        viewModel.otherLanguage,
+                        { viewModel.onOtherLanguageChange(it) },
                         "Enter language",
                         modifier = Modifier.weight(1f)
                     )
                 }
             }
 
-            if (showErrors && !languagesValid) {
-                FieldError(languageErrorText)
+            // Live hint: "Other" is ticked but nothing typed yet.
+            if (viewModel.otherChecked && viewModel.otherLanguage.isBlank()) {
+                FieldError("Please enter the language")
             }
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             FieldLabel("About You", helper = "Tell us something about yourself")
             OutlinedTextField(
-                value = aboutYou,
-                onValueChange = { if (it.length <= 300) aboutYou = it },
+                value = viewModel.aboutYou,
+                onValueChange = { viewModel.onAboutChange(it) },
                 placeholder = { Text("Write about yourself...", color = HintGray, fontSize = 14.sp) },
                 modifier = Modifier.fillMaxWidth().height(120.dp),
                 shape = RoundedCornerShape(14.dp),
-                isError = showErrors && !aboutValid,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = TealPrimary,
-                    unfocusedBorderColor = BorderGray,
-                    errorBorderColor = SosRed
+                    unfocusedBorderColor = BorderGray
                 )
             )
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                if (showErrors && !aboutValid) {
-                    FieldError("Please tell us about yourself")
-                } else {
-                    Spacer(modifier = Modifier.width(1.dp))
-                }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 Text(
-                    "${aboutYou.length}/300",
+                    "${viewModel.aboutYou.length}/300",
                     fontSize = 11.sp,
                     color = TextSecondary,
                     textAlign = TextAlign.End

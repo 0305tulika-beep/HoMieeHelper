@@ -126,9 +126,14 @@ fun ServicesPricingScreen(
     onBack: () -> Unit,
     onContinue: () -> Unit
 ) {
-    // Keyed by the real backend service id.
-    val checkedState = remember { mutableStateMapOf<Int, Boolean>() }
-    val amountState = remember { mutableStateMapOf<Int, String>() }
+    // checkedState / amountState now live in the ViewModel (keyed by backend service id),
+    // so the selections survive navigating away and back.
+    val selectedServices = viewModel.services.filter { viewModel.checkedState[it.id] == true }
+
+    // Continue stays disabled until at least one service is ticked
+    // and every ticked service has a price above zero.
+    val isFormValid = selectedServices.isNotEmpty() &&
+            selectedServices.all { (viewModel.amountState[it.id]?.toIntOrNull() ?: 0) > 0 }
 
     FormScaffold(
         title = "Services & Pricing",
@@ -149,17 +154,15 @@ fun ServicesPricingScreen(
                 PrimaryButton(
                     text = if (viewModel.isLoading) "Saving..." else "Continue",
                     onClick = {
-                        val servicePrices = viewModel.services
-                            .filter { checkedState[it.id] == true }
-                            .map {
-                                ServicePriceItem(
-                                    service = it.id,
-                                    price_per_hour = (amountState[it.id] ?: "").trim()
-                                )
-                            }
+                        val servicePrices = selectedServices.map {
+                            ServicePriceItem(
+                                service = it.id,
+                                price_per_hour = (viewModel.amountState[it.id] ?: "").trim()
+                            )
+                        }
                         viewModel.submit(servicePrices, onSuccess = onContinue)
                     },
-                    enabled = !viewModel.isLoading && viewModel.services.isNotEmpty()
+                    enabled = !viewModel.isLoading && isFormValid
                 )
             }
         }
@@ -179,10 +182,10 @@ fun ServicesPricingScreen(
                     ServicePriceRow(
                         icon = iconForService(service.slug, service.name),
                         title = service.name,
-                        checked = checkedState[service.id] ?: false,
-                        onCheckedChange = { checkedState[service.id] = it },
-                        amount = amountState[service.id] ?: "",
-                        onAmountChange = { amountState[service.id] = it }
+                        checked = viewModel.checkedState[service.id] ?: false,
+                        onCheckedChange = { viewModel.checkedState[service.id] = it },
+                        amount = viewModel.amountState[service.id] ?: "",
+                        onAmountChange = { viewModel.amountState[service.id] = it }
                     )
                 }
             }

@@ -125,13 +125,7 @@ fun AddressInformationScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    var street by remember { mutableStateOf("") }
-    var city by remember { mutableStateOf("") }
-    var state by remember { mutableStateOf("") }
-    var pincode by remember { mutableStateOf("") }
-    var latitude by remember { mutableStateOf("") }
-    var longitude by remember { mutableStateOf("") }
-
+    // Pure UI state for the location button can stay local. All form data is in the ViewModel.
     var isFetchingLocation by remember { mutableStateOf(false) }
     var locationError by remember { mutableStateOf<String?>(null) }
 
@@ -142,8 +136,7 @@ fun AddressInformationScreen(
             val location = fetchCurrentLocation(context)
             isFetchingLocation = false
             if (location != null) {
-                latitude = "%.6f".format(location.latitude)
-                longitude = "%.6f".format(location.longitude)
+                viewModel.onLocationFetched(location.latitude, location.longitude)
             } else {
                 locationError = "Couldn't get your location. Make sure location is turned on and permission is granted."
             }
@@ -184,31 +177,31 @@ fun AddressInformationScreen(
                 }
                 PrimaryButton(
                     text = if (viewModel.isLoading) "Saving..." else "Continue",
-                    onClick = {
-                        viewModel.submit(
-                            houseNo = street,
-                            state = state,
-                            city = city,
-                            pincode = pincode,
-                            latitude = latitude,
-                            longitude = longitude,
-                            onSuccess = onContinue
-                        )
-                    },
-                    enabled = !viewModel.isLoading && latitude.isNotBlank() && longitude.isNotBlank()
+                    onClick = { viewModel.submit(onSuccess = onContinue) },
+                    enabled = !viewModel.isLoading && viewModel.isFormValid
                 )
             }
         }
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             FieldLabel("House / Street")
-            HomieeTextField(street, { street = it }, "Enter house no. / street", leadingIcon = Icons.Filled.Home)
+            HomieeTextField(
+                viewModel.street,
+                { viewModel.onStreetChange(it) },
+                "Enter house no. / street",
+                leadingIcon = Icons.Filled.Home
+            )
         }
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 FieldLabel("City")
-                HomieeTextField(city, { city = it }, "Enter city", leadingIcon = Icons.Filled.LocationCity)
+                HomieeTextField(
+                    viewModel.city,
+                    { viewModel.onCityChange(it) },
+                    "Enter city",
+                    leadingIcon = Icons.Filled.LocationCity
+                )
             }
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 FieldLabel("State")
@@ -216,25 +209,25 @@ fun AddressInformationScreen(
                     placeholder = "Select state",
                     icon = Icons.Filled.Map,
                     options = indianStates,
-                    selected = state,
-                    onSelect = { state = it }
+                    selected = viewModel.state,
+                    onSelect = { viewModel.onStateChange(it) }
                 )
             }
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             FieldLabel("Pincode")
-            PincodeField(value = pincode, onValueChange = { pincode = it })
+            PincodeField(value = viewModel.pincode, onValueChange = { viewModel.onPincodeChange(it) })
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             FieldLabel("Location")
 
-            if (latitude.isNotBlank() && longitude.isNotBlank()) {
+            if (viewModel.latitude.isNotBlank() && viewModel.longitude.isNotBlank()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Filled.MyLocation, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Lat: $latitude, Long: $longitude", fontSize = 14.sp)
+                    Text("Lat: ${viewModel.latitude}, Long: ${viewModel.longitude}", fontSize = 14.sp)
                 }
             }
 
@@ -250,7 +243,7 @@ fun AddressInformationScreen(
                 } else {
                     Icon(Icons.Filled.MyLocation, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(if (latitude.isBlank()) "Use Current Location" else "Refresh Location")
+                    Text(if (viewModel.latitude.isBlank()) "Use Current Location" else "Refresh Location")
                 }
             }
 

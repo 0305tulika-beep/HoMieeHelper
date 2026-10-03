@@ -14,12 +14,25 @@ import kotlinx.coroutines.launch
 
 class DocumentsViewModel(private val repository: UserDetailsRepository) : ViewModel() {
 
+    // ---- Submit state ----
     var isLoading by mutableStateOf(false)
         private set
     var errorMessage by mutableStateOf<String?>(null)
         private set
 
-    fun submit(profilePhotoUri: Uri?, policeCertUri: Uri?, onSuccess: () -> Unit) {
+    // ---- Form state (lives here so the attached files survive navigating away and back) ----
+    var profilePhotoUri by mutableStateOf<Uri?>(null); private set
+    var policeCertUri by mutableStateOf<Uri?>(null); private set
+
+    /** Continue stays disabled until both files are attached. */
+    val isFormValid: Boolean
+        get() = profilePhotoUri != null && policeCertUri != null
+
+    fun onProfilePhotoPicked(uri: Uri) { profilePhotoUri = uri }
+    fun onPoliceCertPicked(uri: Uri) { policeCertUri = uri }
+
+    fun submit(onSuccess: () -> Unit) {
+        if (!isFormValid || isLoading) return
         viewModelScope.launch {
             isLoading = true
             errorMessage = null
