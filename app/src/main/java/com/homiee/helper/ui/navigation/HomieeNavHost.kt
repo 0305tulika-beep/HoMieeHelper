@@ -19,6 +19,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.homiee.helper.data.local.TokenManager
 import com.homiee.helper.ui.components.HelperNavItem
+import com.homiee.helper.viewmodel.EditProfileViewModel
 import com.homiee.helper.viewmodel.HelperBookingViewModel
 import com.homiee.helper.viewmodel.ProfileViewModel
 
@@ -40,6 +41,7 @@ import com.homiee.helper.ui.screens.forms.ServicesPricingScreen
 
 // ---- Helper dashboard screens ----
 import com.homiee.helper.ui.screens.helper.ChatScreen
+import com.homiee.helper.ui.screens.helper.EditProfileScreen
 import com.homiee.helper.ui.screens.helper.HomeScreen
 import com.homiee.helper.ui.screens.helper.JobDetailsScreen
 import com.homiee.helper.ui.screens.helper.JobRequestsScreen
@@ -63,6 +65,9 @@ import com.homiee.helper.viewmodel.ServicesPricingViewModel
 // back stack entry, so typed values survive going back and forward between steps, and are
 // cleared automatically when the graph leaves the back stack (onboarding done / logout).
 private const val ONBOARDING_GRAPH = "onboarding_graph"
+
+// Edit Profile for an already-onboarded helper (opened from the Profile tab).
+private const val EDIT_PROFILE_ROUTE = "edit_profile"
 
 @Composable
 fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
@@ -417,6 +422,7 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
                 email = email,
                 onViewVerifiedDocuments = { navController.navigate(Screen.VerifiedDocuments.route) },
                 onViewTotalEarnings = { navController.navigate(Screen.TotalEarnings.route) },
+                onEditProfile = { navController.navigate(EDIT_PROFILE_ROUTE) },
                 accountViewModel = accountViewModel,
                 onAccountCleared = goToLoginCleared,
                 onContactSupport = { /* TODO: contact support */ },
@@ -440,6 +446,34 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
                 onBackClick = { navController.popBackStack() }
             )
         }
+
+        composable(EDIT_PROFILE_ROUTE) { backStackEntry ->
+            val editContext = LocalContext.current
+            // Reuse the Profile tab's already-loaded profile to pre-fill the form.
+            val profileEntry = remember(backStackEntry) {
+                navController.getBackStackEntry(Screen.Profile.route)
+            }
+            val profileViewModel: ProfileViewModel = viewModel(
+                viewModelStoreOwner = profileEntry,
+                factory = ProfileViewModel.Factory(editContext)
+            )
+            val editViewModel: EditProfileViewModel =
+                viewModel(factory = EditProfileViewModel.Factory(editContext))
+
+            val profile = profileViewModel.profile
+            LaunchedEffect(profile) { profile?.let { editViewModel.prefill(it) } }
+
+            EditProfileScreen(
+                viewModel = editViewModel,
+                onBack = { navController.popBackStack() },
+                onSaved = {
+                    // Refresh the Profile tab so it shows the new values.
+                    profileViewModel.loadProfile()
+                    navController.popBackStack()
+                }
+            )
+        }
+
         composable(Screen.TotalEarnings.route) {
             TotalEarningsScreen(onBackClick = { navController.popBackStack() })
         }
