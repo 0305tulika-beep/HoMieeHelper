@@ -18,6 +18,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.homiee.helper.ui.components.*
 import com.homiee.helper.ui.theme.*
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import com.homiee.helper.viewmodel.HelperBookingViewModel
+
 
 /** Same subtle 1dp shadow used on Home / Job Requests / My Jobs / Profile / Request Details cards. */
 private val cardElevation = Modifier.shadow(elevation = 1.dp, shape = RoundedCornerShape(16.dp), clip = false)
@@ -25,12 +30,16 @@ private val cardElevation = Modifier.shadow(elevation = 1.dp, shape = RoundedCor
 @Composable
 fun JobDetailsScreen(
     jobId: String,
+    viewModel: HelperBookingViewModel,
     onBackClick: () -> Unit,
     onChatWithResident: (String) -> Unit,
     onCallResident: (String) -> Unit
 ) {
     DashboardSystemBars(darkStatusBarIcons = true)
-    val booking = HelperSampleData.bookingById(jobId)
+    val bookings by viewModel.bookings.collectAsState()
+    val booking = remember(bookings, jobId) {
+        bookings.find { it.id.toString() == jobId }?.toJobBooking()
+    }
 
     Scaffold(containerColor = BackgroundWhite) { innerPadding ->
         Column(

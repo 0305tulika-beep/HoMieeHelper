@@ -6,15 +6,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.DirectionsBike
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Flag
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,15 +25,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.homiee.helper.ui.components.*
 import com.homiee.helper.ui.theme.*
+import com.homiee.helper.viewmodel.HelperBookingViewModel
 
 private enum class JobsTab(val label: String) { UPCOMING("Upcoming"), ACTIVE("Active"), COMPLETED("Completed") }
 
 @Composable
 fun MyJobsScreen(
+    viewModel: HelperBookingViewModel,
     onOpenJob: (String) -> Unit = {},
     onChatWithResident: (String) -> Unit = {},
-    onCancelJob: (String) -> Unit = {},
-    onContactResident: () -> Unit = {},
     currentRoute: String? = null,
     onNavItemClick: (HelperNavItem) -> Unit = {},
     /** 0 = Upcoming, 1 = Active, 2 = Completed. Mainly useful for previews/deep-links. */
@@ -47,12 +42,24 @@ fun MyJobsScreen(
     DashboardSystemBars(darkStatusBarIcons = false)
     var selectedTab by remember { mutableStateOf(JobsTab.entries[initialTabIndex.coerceIn(0, JobsTab.entries.lastIndex)]) }
 
+    val pending by viewModel.pendingRequests.collectAsState()
+    val upcomingDtos by viewModel.upcoming.collectAsState()
+    val completedDtos by viewModel.completed.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val loadError by viewModel.loadError.collectAsState()
+
+    // Fetch fresh jobs every time this screen opens
+    LaunchedEffect(Unit) { viewModel.load() }
+
+    val upcomingJobs = remember(upcomingDtos) { upcomingDtos.map { it.toJobBooking() } }
+    val completedJobs = remember(completedDtos) { completedDtos.map { it.toJobBooking() } }
+
     Scaffold(
         containerColor = BackgroundWhite,
         bottomBar = {
             HelperBottomNavBar(
                 currentRoute = currentRoute,
-                badgeCounts = mapOf(HelperNavItem.JobRequests to HelperSampleData.newRequests.size),
+                badgeCounts = mapOf(HelperNavItem.JobRequests to pending.size),
                 onItemClick = onNavItemClick
             )
         }
@@ -107,136 +114,110 @@ fun MyJobsScreen(
             }
 
             when (selectedTab) {
-                JobsTab.UPCOMING -> UpcomingJobsList(
+                JobsTab.UPCOMING -> JobsListSection(
+                    title = "Upcoming Bookings",
+                    jobs = upcomingJobs,
+                    isLoading = isLoading,
+                    loadError = loadError,
+                    emptyText = "No upcoming jobs",
+                    statusText = "Confirmed",
+                    statusBg = SuccessGreenBg,
+                    statusColor = SuccessGreen,
+                    onRetry = { viewModel.load() },
                     onOpenJob = onOpenJob,
-                    onChat = onChatWithResident,
-                    onCancel = onCancelJob
+                    onChat = onChatWithResident
                 )
-                JobsTab.ACTIVE -> ActiveJobSection(onContactResident = onContactResident)
-                JobsTab.COMPLETED -> CompletedJobsList(onOpenJob = onOpenJob, onChat = onChatWithResident)
+
+                // The bookings API has no "in progress" status, so there is nothing to show yet.
+                JobsTab.ACTIVE -> CenteredBox {
+                    Text("No active job right now", fontSize = 14.sp, color = TextSecondary)
+                }
+
+                JobsTab.COMPLETED -> JobsListSection(
+                    title = "Completed Bookings",
+                    jobs = completedJobs,
+                    isLoading = isLoading,
+                    loadError = loadError,
+                    emptyText = "No completed jobs yet",
+                    statusText = "Completed",
+                    statusBg = InfoCardBg,
+                    statusColor = TealPrimary,
+                    onRetry = { viewModel.load() },
+                    onOpenJob = onOpenJob,
+                    onChat = onChatWithResident
+                )
             }
         }
     }
 }
 
 @Composable
-private fun UpcomingJobsList(onOpenJob: (String) -> Unit, onChat: (String) -> Unit, onCancel: (String) -> Unit) {
-    LazyColumn(
-        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 4.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        item { SectionLabel(title = "Upcoming Bookings") }
-        items(HelperSampleData.upcomingBookings, key = { it.id }) { booking ->
-            BookingCard(
-                booking = booking,
-                statusText = "Confirmed",
-                statusBg = SuccessGreenBg,
-                statusColor = SuccessGreen,
-                primaryActionLabel = "Chat",
-                onPrimaryAction = { onChat(booking.id) },
-                secondaryActionLabel = "View Details",
-                onSecondaryAction = { onOpenJob(booking.id) },
-                tertiaryActionLabel = "Cancel",
-                onTertiaryAction = { onCancel(booking.id) }
-            )
-        }
-        item { Spacer(modifier = Modifier.height(16.dp)) }
-    }
-}
-
-@Composable
-private fun CompletedJobsList(onOpenJob: (String) -> Unit, onChat: (String) -> Unit) {
-    LazyColumn(
-        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 4.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        item { SectionLabel(title = "Completed Bookings") }
-        items(HelperSampleData.completedBookings, key = { it.id }) { booking ->
-            BookingCard(
-                booking = booking,
-                statusText = "Completed",
-                statusBg = InfoCardBg,
-                statusColor = TealPrimary,
-                primaryActionLabel = "Chat",
-                onPrimaryAction = { onChat(booking.id) },
-                secondaryActionLabel = "View Details",
-                onSecondaryAction = { onOpenJob(booking.id) }
-            )
-        }
-        item { Spacer(modifier = Modifier.height(16.dp)) }
-    }
-}
-
-@Composable
-private fun ActiveJobSection(onContactResident: () -> Unit) {
-    val booking = HelperSampleData.activeBooking
-    val steps = listOf(
-        ProgressStep("On the Way", Icons.Filled.DirectionsBike),
-        ProgressStep("Started", Icons.Filled.PlayArrow),
-        ProgressStep("Completed", Icons.Filled.Check),
-        ProgressStep("Finished", Icons.Filled.Flag)
+private fun CenteredBox(content: @Composable BoxScope.() -> Unit) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+        content = content
     )
+}
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 20.dp)
-            .verticalScroll(androidx.compose.foundation.rememberScrollState())
-    ) {
-        SectionLabel(title = "Active Booking")
-        Spacer(modifier = Modifier.height(4.dp))
-        SectionCard {
-            Row(verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth()) {
-                ServiceIconBadge(icon = booking.service.icon)
-                Spacer(modifier = Modifier.width(12.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(booking.service.label, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-                    Text(booking.residentName, fontSize = 12.sp, color = TextSecondary)
-                    Text("${booking.location}", fontSize = 11.sp, color = HintGray)
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text("${booking.date}  •  ${booking.time}", fontSize = 11.sp, color = TextSecondary)
-                }
-                StatusChip(text = "In Progress", background = InfoCardBg, textColor = TealPrimary)
-            }
-
-            Spacer(modifier = Modifier.height(14.dp))
-            Text("Time Elapsed", fontSize = 12.sp, color = TextSecondary)
-            Spacer(modifier = Modifier.height(2.dp))
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        booking.elapsedLabel.substringBefore(" of"),
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary
-                    )
-                    Text("of ${booking.elapsedLabel.substringAfter("of ")}", fontSize = 11.sp, color = TextSecondary)
-                }
-                ProgressRing(percent = (booking.progressFraction * 100).toInt())
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-            Text("Job Progress", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
-            Spacer(modifier = Modifier.height(10.dp))
-            JobProgressStepper(steps = steps, currentStepIndex = 1)
-
-            Spacer(modifier = Modifier.height(14.dp))
-            InfoCard(text = "Please keep the resident updated about your progress.", icon = Icons.Filled.CalendarMonth)
+@Composable
+private fun JobsListSection(
+    title: String,
+    jobs: List<JobBooking>,
+    isLoading: Boolean,
+    loadError: String?,
+    emptyText: String,
+    statusText: String,
+    statusBg: Color,
+    statusColor: Color,
+    onRetry: () -> Unit,
+    onOpenJob: (String) -> Unit,
+    onChat: (String) -> Unit
+) {
+    when {
+        // First load
+        isLoading && jobs.isEmpty() -> CenteredBox {
+            CircularProgressIndicator(color = TealPrimary)
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-        Text("Important Details", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-        Spacer(modifier = Modifier.height(10.dp))
-        SectionCard {
-            InfoRow("Service", booking.service.label)
-            InfoRow("Location", booking.location)
-            InfoRow("Duration", booking.duration)
-            InfoRow("Expected Salary", booking.salary, valueColor = TealPrimary)
+        // Failed with nothing to show
+        loadError != null && jobs.isEmpty() -> Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(text = loadError, fontSize = 13.sp, color = TextSecondary)
+            Spacer(modifier = Modifier.height(4.dp))
+            TextButton(onClick = onRetry) {
+                Text("Retry", color = TealPrimary, fontWeight = FontWeight.Bold)
+            }
         }
 
-        Spacer(modifier = Modifier.height(18.dp))
-        PrimaryButton(text = "Contact Resident", onClick = onContactResident)
-        Spacer(modifier = Modifier.height(24.dp))
+        jobs.isEmpty() -> CenteredBox {
+            Text(emptyText, fontSize = 14.sp, color = TextSecondary)
+        }
+
+        else -> LazyColumn(
+            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            item { SectionLabel(title = title) }
+            items(jobs, key = { it.id }) { booking ->
+                BookingCard(
+                    booking = booking,
+                    statusText = statusText,
+                    statusBg = statusBg,
+                    statusColor = statusColor,
+                    primaryActionLabel = "Chat",
+                    onPrimaryAction = { onChat(booking.id) },
+                    secondaryActionLabel = "View Details",
+                    onSecondaryAction = { onOpenJob(booking.id) }
+                )
+            }
+            item { Spacer(modifier = Modifier.height(16.dp)) }
+        }
     }
 }
 
@@ -268,7 +249,9 @@ private fun BookingCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(booking.service.label, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                 Text(booking.residentName, fontSize = 12.sp, color = TextSecondary)
-                Text(booking.location, fontSize = 11.sp, color = HintGray)
+                if (booking.location.isNotBlank()) {
+                    Text(booking.location, fontSize = 11.sp, color = HintGray)
+                }
             }
             StatusChip(text = statusText, background = statusBg, textColor = statusColor)
         }
@@ -276,11 +259,10 @@ private fun BookingCard(
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             InfoChip(text = booking.date)
             InfoChip(text = booking.time)
-            InfoChip(text = booking.duration)
+            if (booking.duration.isNotBlank()) InfoChip(text = booking.duration)
         }
         Spacer(modifier = Modifier.height(12.dp))
-        // All actions (Chat / View Details / Cancel) now share a single row instead of
-        // stacking the tertiary action on its own row below.
+        // All actions share a single row.
         Row(modifier = Modifier.fillMaxWidth()) {
             OutlinedButton(
                 onClick = onPrimaryAction,

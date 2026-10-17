@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Sos
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -47,6 +45,10 @@ private const val DEFAULT_EMERGENCY_HELPLINE = "112"
 @Composable
 fun HomeScreen(
     userName: String = "Priya",
+    // Real data comes from HelperBookingViewModel (mapped in HomieeNavHost).
+    // The defaults keep @Preview working with the sample data.
+    requests: List<JobRequest> = HelperSampleData.newRequests,
+    upcomingJobs: List<JobBooking> = HelperSampleData.upcomingBookings,
     profileCompletionPercent: Int = 60,
     emergencyHelplineNumber: String = DEFAULT_EMERGENCY_HELPLINE,
     onCompleteProfileClick: () -> Unit = {},
@@ -70,7 +72,7 @@ fun HomeScreen(
         bottomBar = {
             HelperBottomNavBar(
                 currentRoute = currentRoute,
-                badgeCounts = mapOf(HelperNavItem.JobRequests to HelperSampleData.newRequests.size),
+                badgeCounts = mapOf(HelperNavItem.JobRequests to requests.size),
                 onItemClick = onNavItemClick
             )
         }
@@ -177,24 +179,29 @@ fun HomeScreen(
                             onActionClick = onViewAllRequests
                         )
                         Spacer(modifier = Modifier.height(14.dp))
-                        HelperSampleData.newRequests.take(3).forEachIndexed { index, request ->
-                            HomeRequestCard(
-                                request = request,
-                                onView = { onViewRequest(request.id) },
-                                onAccept = { onAcceptRequest(request.id) }
-                            )
-                            if (index != HelperSampleData.newRequests.take(3).lastIndex) {
-                                Spacer(modifier = Modifier.height(12.dp))
+                        if (requests.isEmpty()) {
+                            Text("No new requests right now.", fontSize = 12.sp, color = TextSecondary)
+                        } else {
+                            val visibleRequests = requests.take(3)
+                            visibleRequests.forEachIndexed { index, request ->
+                                HomeRequestCard(
+                                    request = request,
+                                    onView = { onViewRequest(request.id) },
+                                    onAccept = { onAcceptRequest(request.id) }
+                                )
+                                if (index != visibleRequests.lastIndex) {
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                }
                             }
+                            Spacer(modifier = Modifier.height(14.dp))
+                            Text(
+                                text = "View All Requests",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = TealPrimary,
+                                modifier = Modifier.clickable { onViewAllRequests() }
+                            )
                         }
-                        Spacer(modifier = Modifier.height(14.dp))
-                        Text(
-                            text = "View All Requests",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = TealPrimary,
-                            modifier = Modifier.clickable { onViewAllRequests() }
-                        )
                     }
 
                     Spacer(modifier = Modifier.height(20.dp))
@@ -203,13 +210,18 @@ fun HomeScreen(
                     ElevatedHomeCard {
                         SectionHeader(title = "Upcoming Jobs", actionText = "View All", onActionClick = onViewAllUpcoming)
                         Spacer(modifier = Modifier.height(12.dp))
-                        HelperSampleData.upcomingBookings.take(2).forEachIndexed { index, booking ->
-                            HomeUpcomingJobRow(
-                                booking = booking,
-                                onClick = { onUpcomingJobClick(booking.id) }
-                            )
-                            if (index != HelperSampleData.upcomingBookings.take(2).lastIndex) {
-                                Spacer(modifier = Modifier.height(10.dp))
+                        if (upcomingJobs.isEmpty()) {
+                            Text("No upcoming jobs yet.", fontSize = 12.sp, color = TextSecondary)
+                        } else {
+                            val visibleJobs = upcomingJobs.take(2)
+                            visibleJobs.forEachIndexed { index, booking ->
+                                HomeUpcomingJobRow(
+                                    booking = booking,
+                                    onClick = { onUpcomingJobClick(booking.id) }
+                                )
+                                if (index != visibleJobs.lastIndex) {
+                                    Spacer(modifier = Modifier.height(10.dp))
+                                }
                             }
                         }
                     }
@@ -301,8 +313,8 @@ private fun ElevatedHomeCard(
 
 /**
  * Individual new-request card: white background, subtle border, teal left
- * accent strip. Time-ago sits at the top; name/location and the View +
- * Accept buttons sit together in a single row below.
+ * accent strip. Name (and location, when we have one) on the left; View +
+ * Accept buttons on the right.
  */
 @Composable
 private fun HomeRequestCard(request: JobRequest, onView: () -> Unit, onAccept: () -> Unit) {
@@ -329,7 +341,10 @@ private fun HomeRequestCard(request: JobRequest, onView: () -> Unit, onAccept: (
                 Column(modifier = Modifier.weight(1f)) {
                     Text(request.residentName, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                     Spacer(modifier = Modifier.height(2.dp))
-                    Text(request.location, fontSize = 12.sp, color = TextSecondary)
+                    Text(request.service.label, fontSize = 12.sp, color = TextSecondary)
+                    if (request.location.isNotBlank()) {
+                        Text(request.location, fontSize = 11.sp, color = HintGray)
+                    }
                 }
                 Spacer(modifier = Modifier.width(10.dp))
                 OutlinedButton(
@@ -371,7 +386,11 @@ private fun HomeUpcomingJobRow(booking: JobBooking, onClick: () -> Unit) {
         Column(modifier = Modifier.weight(1f)) {
             Text(booking.service.label, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
             Text(booking.residentName, fontSize = 12.sp, color = TextSecondary)
-            Text(booking.location, fontSize = 11.sp, color = HintGray)
+            if (booking.location.isNotBlank()) {
+                Text(booking.location, fontSize = 11.sp, color = HintGray)
+            } else {
+                Text(booking.time, fontSize = 11.sp, color = HintGray)
+            }
         }
         StatusChip(text = "Confirmed", background = SuccessGreenBg, textColor = SuccessGreen)
     }

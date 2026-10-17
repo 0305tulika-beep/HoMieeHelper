@@ -6,9 +6,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FormatQuote
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -18,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.homiee.helper.ui.components.*
 import com.homiee.helper.ui.theme.*
+import com.homiee.helper.viewmodel.HelperBookingViewModel
 
 /** Same subtle 1dp shadow used on Home / Job Requests / My Jobs / Profile cards. */
 private val cardElevation = Modifier.shadow(elevation = 1.dp, shape = RoundedCornerShape(16.dp), clip = false)
@@ -25,12 +28,20 @@ private val cardElevation = Modifier.shadow(elevation = 1.dp, shape = RoundedCor
 @Composable
 fun RequestDetailsScreen(
     requestId: String,
-    onBackClick: () -> Unit,
-    onAcceptRequest: (String) -> Unit,
-    onRejectRequest: (String) -> Unit
+    viewModel: HelperBookingViewModel,
+    onBackClick: () -> Unit
 ) {
     DashboardSystemBars(darkStatusBarIcons = true)
-    val request = HelperSampleData.requestById(requestId)
+
+    val bookings by viewModel.bookings.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val respondingIds by viewModel.respondingIds.collectAsState()
+
+    val bookingId = requestId.toIntOrNull()
+    val request = remember(bookings, requestId) {
+        bookings.find { it.id.toString() == requestId }?.toJobRequest()
+    }
+    val isResponding = bookingId != null && bookingId in respondingIds
 
     Scaffold(containerColor = BackgroundWhite) { innerPadding ->
         Column(
@@ -46,7 +57,8 @@ fun RequestDetailsScreen(
 
             if (request == null) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Request not found", color = TextSecondary)
+                    if (isLoading) CircularProgressIndicator(color = TealPrimary)
+                    else Text("Request not found", color = TextSecondary)
                 }
                 return@Column
             }
@@ -65,12 +77,21 @@ fun RequestDetailsScreen(
                         Column(modifier = Modifier.weight(1f)) {
                             Text(request.service.label, fontSize = 17.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                             Spacer(modifier = Modifier.height(6.dp))
-                            DetailIconLine(text = "${request.date}")
-                            DetailIconLine(text = "${request.time} (${request.duration})")
-                            DetailIconLine(text = request.location)
-                            DetailIconLine(text = request.salary)
+                            DetailIconLine(text = request.date)
+                            DetailIconLine(
+                                text = if (request.duration.isBlank()) request.time
+                                else "${request.time} (${request.duration})"
+                            )
+                            if (request.location.isNotBlank()) DetailIconLine(text = request.location)
+                            if (request.salary.isNotBlank()) DetailIconLine(text = request.salary)
                         }
-                        StatusChip(text = "New Request")
+                        StatusChip(
+                            text = when (request.status) {
+                                RequestStatus.NEW -> "New Request"
+                                RequestStatus.ACCEPTED -> "Confirmed"
+                                RequestStatus.REJECTED -> "Rejected"
+                            }
+                        )
                     }
                 }
 
@@ -100,7 +121,7 @@ fun RequestDetailsScreen(
                     InfoRow("Service Type", request.service.label)
                     InfoRow("Date", request.date)
                     InfoRow("Time", request.time)
-                    InfoRow("Duration", request.duration)
+                    if (request.duration.isNotBlank()) InfoRow("Duration", request.duration)
                     InfoRow("Expected Salary", request.salary, valueColor = TealPrimary)
                 }
 
@@ -113,10 +134,11 @@ fun RequestDetailsScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                if (request.status == RequestStatus.NEW) {
+                if (request.status == RequestStatus.NEW && bookingId != null) {
                     Row(modifier = Modifier.fillMaxWidth()) {
                         OutlinedButton(
-                            onClick = { onRejectRequest(request.id) },
+                            onClick = { viewModel.reject(bookingId) { ok -> if (ok) onBackClick() } },
+                            enabled = !isResponding,
                             modifier = Modifier.weight(1f).height(52.dp),
                             shape = RoundedCornerShape(14.dp),
                             border = androidx.compose.foundation.BorderStroke(1.dp, SosRed),
@@ -124,11 +146,22 @@ fun RequestDetailsScreen(
                         ) { Text("Reject Request", fontWeight = FontWeight.SemiBold) }
                         Spacer(modifier = Modifier.width(12.dp))
                         Button(
-                            onClick = { onAcceptRequest(request.id) },
+                            onClick = { viewModel.accept(bookingId) { ok -> if (ok) onBackClick() } },
+                            enabled = !isResponding,
                             modifier = Modifier.weight(1f).height(52.dp),
                             shape = RoundedCornerShape(14.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = TealPrimary)
-                        ) { Text("Accept Request", color = Color.White, fontWeight = FontWeight.SemiBold) }
+                        ) {
+                            if (isResponding) {
+                                CircularProgressIndicator(
+                                    color = Color.White,
+                                    strokeWidth = 2.dp,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            } else {
+                                Text("Accept Request", color = Color.White, fontWeight = FontWeight.SemiBold)
+                            }
+                        }
                     }
                 }
 

@@ -1,7 +1,10 @@
 package com.homiee.helper.ui.navigation
 
 import android.app.Activity
+import android.widget.Toast
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
@@ -16,6 +19,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.homiee.helper.data.local.TokenManager
 import com.homiee.helper.ui.components.HelperNavItem
+import com.homiee.helper.viewmodel.HelperBookingViewModel
 import com.homiee.helper.viewmodel.ProfileViewModel
 
 // ---- Auth screens ----
@@ -45,6 +49,8 @@ import com.homiee.helper.ui.screens.helper.ProfileScreen
 import com.homiee.helper.ui.screens.helper.RequestDetailsScreen
 import com.homiee.helper.ui.screens.helper.TotalEarningsScreen
 import com.homiee.helper.ui.screens.helper.VerifiedDocumentsScreen
+import com.homiee.helper.ui.screens.helper.toJobBooking
+import com.homiee.helper.ui.screens.helper.toJobRequest
 import com.homiee.helper.viewmodel.AccountActionViewModel
 import com.homiee.helper.viewmodel.AddressInformationViewModel
 import com.homiee.helper.viewmodel.AvailabilityViewModel
@@ -60,6 +66,19 @@ private const val ONBOARDING_GRAPH = "onboarding_graph"
 
 @Composable
 fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
+    val context = LocalContext.current
+
+    // One shared ViewModel for every helper-booking screen (Home, Job Requests,
+    // My Jobs, Request/Job details), so they all read the same data.
+    val bookingViewModel: HelperBookingViewModel = viewModel()
+
+    // Accept / reject / error messages from the ViewModel, shown as toasts.
+    LaunchedEffect(Unit) {
+        bookingViewModel.messages.collect {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+        }
+    }
+
     val onBottomNavClick: (HelperNavItem) -> Unit = { item ->
         navController.navigate(item.route) {
             popUpTo(Screen.Home.route) { saveState = true }
@@ -80,10 +99,10 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
         // ================= AUTH FLOW =================
 
         composable(Screen.Splash.route) {
-            val context = LocalContext.current
+            val splashContext = LocalContext.current
             SplashScreen(
                 onFinished = {
-                    val tokenManager = TokenManager.getInstance(context)
+                    val tokenManager = TokenManager.getInstance(splashContext)
                     val destination = when {
                         !tokenManager.isLoggedIn() -> Screen.SignUp.route
                         !tokenManager.isOnboardingComplete() -> Screen.PersonalInformation.route
@@ -175,14 +194,14 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
         ) {
 
             composable(Screen.PersonalInformation.route) { backStackEntry ->
-                val context = LocalContext.current
-                val activity = context as? Activity
+                val formContext = LocalContext.current
+                val activity = formContext as? Activity
                 val parentEntry = remember(backStackEntry) {
                     navController.getBackStackEntry(ONBOARDING_GRAPH)
                 }
                 val personalInfoViewModel: PersonalInformationViewModel = viewModel(
                     viewModelStoreOwner = parentEntry,
-                    factory = PersonalInformationViewModel.Factory(context)
+                    factory = PersonalInformationViewModel.Factory(formContext)
                 )
                 PersonalInformationScreen(
                     viewModel = personalInfoViewModel,
@@ -194,13 +213,13 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
             }
 
             composable(Screen.AddressInformation.route) { backStackEntry ->
-                val context = LocalContext.current
+                val formContext = LocalContext.current
                 val parentEntry = remember(backStackEntry) {
                     navController.getBackStackEntry(ONBOARDING_GRAPH)
                 }
                 val addressViewModel: AddressInformationViewModel = viewModel(
                     viewModelStoreOwner = parentEntry,
-                    factory = AddressInformationViewModel.Factory(context)
+                    factory = AddressInformationViewModel.Factory(formContext)
                 )
                 AddressInformationScreen(
                     viewModel = addressViewModel,
@@ -210,13 +229,13 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
             }
 
             composable(Screen.Documents.route) { backStackEntry ->
-                val context = LocalContext.current
+                val formContext = LocalContext.current
                 val parentEntry = remember(backStackEntry) {
                     navController.getBackStackEntry(ONBOARDING_GRAPH)
                 }
                 val documentsViewModel: DocumentsViewModel = viewModel(
                     viewModelStoreOwner = parentEntry,
-                    factory = DocumentsViewModel.Factory(context)
+                    factory = DocumentsViewModel.Factory(formContext)
                 )
                 DocumentsScreen(
                     viewModel = documentsViewModel,
@@ -226,13 +245,13 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
             }
 
             composable(Screen.ServicesPricing.route) { backStackEntry ->
-                val context = LocalContext.current
+                val formContext = LocalContext.current
                 val parentEntry = remember(backStackEntry) {
                     navController.getBackStackEntry(ONBOARDING_GRAPH)
                 }
                 val servicesPricingViewModel: ServicesPricingViewModel = viewModel(
                     viewModelStoreOwner = parentEntry,
-                    factory = ServicesPricingViewModel.Factory(context)
+                    factory = ServicesPricingViewModel.Factory(formContext)
                 )
                 ServicesPricingScreen(
                     viewModel = servicesPricingViewModel,
@@ -242,13 +261,13 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
             }
 
             composable(Screen.ExperienceAbout.route) { backStackEntry ->
-                val context = LocalContext.current
+                val formContext = LocalContext.current
                 val parentEntry = remember(backStackEntry) {
                     navController.getBackStackEntry(ONBOARDING_GRAPH)
                 }
                 val experienceAboutViewModel: ExperienceAboutViewModel = viewModel(
                     viewModelStoreOwner = parentEntry,
-                    factory = ExperienceAboutViewModel.Factory(context)
+                    factory = ExperienceAboutViewModel.Factory(formContext)
                 )
                 ExperienceAboutScreen(
                     viewModel = experienceAboutViewModel,
@@ -258,19 +277,19 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
             }
 
             composable(Screen.Availability.route) { backStackEntry ->
-                val context = LocalContext.current
+                val formContext = LocalContext.current
                 val parentEntry = remember(backStackEntry) {
                     navController.getBackStackEntry(ONBOARDING_GRAPH)
                 }
                 val availabilityViewModel: AvailabilityViewModel = viewModel(
                     viewModelStoreOwner = parentEntry,
-                    factory = AvailabilityViewModel.Factory(context)
+                    factory = AvailabilityViewModel.Factory(formContext)
                 )
                 AvailabilityScreen(
                     viewModel = availabilityViewModel,
                     onBack = { navController.popBackStack() },
                     onContinue = {
-                        TokenManager.getInstance(context).setOnboardingComplete(true)
+                        TokenManager.getInstance(formContext).setOnboardingComplete(true)
                         // Onboarding fully done — clears the whole form stack behind the user
                         // (this also clears the onboarding graph and all its form ViewModels).
                         navController.navigate(Screen.Home.route) {
@@ -285,10 +304,18 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
 
         composable(Screen.Home.route) {
             val currentRoute by navController.currentBackStackEntryAsState()
+            val pending by bookingViewModel.pendingRequests.collectAsState()
+            val upcoming by bookingViewModel.upcoming.collectAsState()
+
+            // Fetch fresh bookings every time Home opens
+            LaunchedEffect(Unit) { bookingViewModel.load() }
+
             HomeScreen(
+                requests = remember(pending) { pending.map { it.toJobRequest() } },
+                upcomingJobs = remember(upcoming) { upcoming.map { it.toJobBooking() } },
                 onCompleteProfileClick = { navController.navigate(Screen.PersonalInformation.route) },
                 onViewRequest = { id -> navController.navigate(Screen.RequestDetails.createRoute(id)) },
-                onAcceptRequest = { /* TODO: accept request */ },
+                onAcceptRequest = { id -> id.toIntOrNull()?.let { bookingViewModel.accept(it) } },
                 onViewAllRequests = { onBottomNavClick(HelperNavItem.JobRequests) },
                 onViewAllUpcoming = { onBottomNavClick(HelperNavItem.MyJobs) },
                 onUpcomingJobClick = { id -> navController.navigate(Screen.JobDetails.createRoute(id)) },
@@ -301,9 +328,8 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
         composable(Screen.JobRequests.route) {
             val currentRoute by navController.currentBackStackEntryAsState()
             JobRequestsScreen(
+                viewModel = bookingViewModel,
                 onOpenRequest = { id -> navController.navigate(Screen.RequestDetails.createRoute(id)) },
-                onAcceptRequest = { /* TODO: accept request */ },
-                onRejectRequest = { /* TODO: reject request */ },
                 currentRoute = currentRoute?.destination?.route,
                 onNavItemClick = onBottomNavClick
             )
@@ -316,19 +342,17 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
             val requestId = backStackEntry.arguments?.getString("requestId").orEmpty()
             RequestDetailsScreen(
                 requestId = requestId,
-                onBackClick = { navController.popBackStack() },
-                onAcceptRequest = { navController.popBackStack() },
-                onRejectRequest = { navController.popBackStack() }
+                viewModel = bookingViewModel,
+                onBackClick = { navController.popBackStack() }
             )
         }
 
         composable(Screen.MyJobs.route) {
             val currentRoute by navController.currentBackStackEntryAsState()
             MyJobsScreen(
+                viewModel = bookingViewModel,
                 onOpenJob = { id -> navController.navigate(Screen.JobDetails.createRoute(id)) },
                 onChatWithResident = { id -> navController.navigate(Screen.Chat.createRoute(id)) },
-                onCancelJob = { /* TODO: cancel job */ },
-                onContactResident = { /* TODO: contact resident */ },
                 currentRoute = currentRoute?.destination?.route,
                 onNavItemClick = onBottomNavClick
             )
@@ -341,6 +365,7 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
             val jobId = backStackEntry.arguments?.getString("jobId").orEmpty()
             JobDetailsScreen(
                 jobId = jobId,
+                viewModel = bookingViewModel,
                 onBackClick = { navController.popBackStack() },
                 onChatWithResident = { id -> navController.navigate(Screen.Chat.createRoute(id)) },
                 onCallResident = { /* TODO: place call */ }
@@ -370,16 +395,18 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
         }
 
         composable(Screen.Profile.route) {
-            val context = LocalContext.current
+            val profileContext = LocalContext.current
             val currentRoute by navController.currentBackStackEntryAsState()
             val accountViewModel: AccountActionViewModel =
-                viewModel(factory = AccountActionViewModel.Factory(context))
+                viewModel(factory = AccountActionViewModel.Factory(profileContext))
             val profileViewModel: ProfileViewModel =
-                viewModel(factory = ProfileViewModel.Factory(context))
+                viewModel(factory = ProfileViewModel.Factory(profileContext))
             // Email saved at sign-up (OTP verify) / login
-            val email = remember { TokenManager.getInstance(context).getUserEmail() }
+            val email = remember { TokenManager.getInstance(profileContext).getUserEmail() }
 
             val goToLoginCleared: () -> Unit = {
+                // Drop this helper's bookings so the next account never sees them.
+                bookingViewModel.clear()
                 navController.navigate(Screen.Login.route) {
                     popUpTo(0) { inclusive = true }
                 }
@@ -399,14 +426,14 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
         }
 
         composable(Screen.VerifiedDocuments.route) { backStackEntry ->
-            val context = LocalContext.current
+            val docsContext = LocalContext.current
             val profileEntry = remember(backStackEntry) {
                 navController.getBackStackEntry(Screen.Profile.route)
             }
             val profileViewModel: ProfileViewModel =
                 viewModel(
                     viewModelStoreOwner = profileEntry,
-                    factory = ProfileViewModel.Factory(context)
+                    factory = ProfileViewModel.Factory(docsContext)
                 )
             VerifiedDocumentsScreen(
                 profileViewModel = profileViewModel,
