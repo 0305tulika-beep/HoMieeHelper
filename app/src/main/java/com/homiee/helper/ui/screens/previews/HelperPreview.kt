@@ -5,6 +5,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import com.homiee.helper.data.model.BookingDto
+import com.homiee.helper.data.remote.HelperRatingsData
+import com.homiee.helper.data.remote.HelperRatingsResponse
+import com.homiee.helper.data.remote.RatingDto
+import com.homiee.helper.data.remote.ReviewsApiService
 import com.homiee.helper.data.repository.UserDetailsRepository
 import com.homiee.helper.ui.screens.helper.ChatScreen
 import com.homiee.helper.ui.screens.helper.HelperSampleData
@@ -15,11 +19,13 @@ import com.homiee.helper.ui.screens.helper.MessagesScreen
 import com.homiee.helper.ui.screens.helper.MyJobsScreen
 import com.homiee.helper.ui.screens.helper.ProfileScreen
 import com.homiee.helper.ui.screens.helper.RequestDetailsScreen
-import com.homiee.helper.ui.screens.helper.TotalEarningsScreen
 import com.homiee.helper.ui.screens.helper.VerifiedDocumentsScreen
+import com.homiee.helper.ui.screens.reviews.ReviewsReceivedScreen
+import com.homiee.helper.ui.screens.reviews.ReviewsReceivedViewModel
 import com.homiee.helper.ui.theme.HomieeHelperTheme
 import com.homiee.helper.viewmodel.HelperBookingViewModel
 import com.homiee.helper.viewmodel.ProfileViewModel
+import retrofit2.Response
 
 /**
  * Previews for the Home / Job Requests / My Jobs / Messages / Profile
@@ -30,6 +36,7 @@ import com.homiee.helper.viewmodel.ProfileViewModel
  *
  * Screens that read bookings get a HelperBookingViewModel seeded with the
  * sample bookings below (see PREVIEW_BOOKINGS). It never touches the network.
+ * The reviews screen likewise gets a fake ReviewsApiService (see PREVIEW_REVIEWS_API).
  */
 
 private const val PREVIEW_WIDTH_DP = 360
@@ -78,6 +85,26 @@ private val PREVIEW_BOOKINGS = listOf(
         totalAmount = "500.00", status = "completed", createdAt = "2026-07-05T10:00:00Z"
     )
 )
+
+/** Fake ratings API so the Reviews Received preview never touches the network. */
+private val PREVIEW_REVIEWS_API = object : ReviewsApiService {
+    override suspend fun helperRatings(helperId: Int): Response<HelperRatingsResponse> =
+        Response.success(
+            HelperRatingsResponse(
+                status = "success",
+                message = null,
+                data = HelperRatingsData(
+                    avg_rating = "4.80",
+                    rating_count = 22,
+                    ratings = listOf(
+                        RatingDto(1, 5, "Very punctual and thorough with cleaning. Would book again.", "2026-10-16T10:00:00Z"),
+                        RatingDto(2, 4, "Cooked amazing food. My family loved it.", "2026-10-11T08:30:00Z"),
+                        RatingDto(3, 5, null, "2026-09-28T17:45:00Z")
+                    )
+                )
+            )
+        )
+}
 
 /** A ViewModel pre-filled with sample bookings; safe to build inside a @Preview. */
 @Composable
@@ -201,7 +228,7 @@ fun ProfileScreenPreview() {
         ProfileScreen(
             profileViewModel = profileViewModel,
             onViewVerifiedDocuments = {},
-            onViewTotalEarnings = {},
+            onViewReviewsReceived = {},
             accountViewModel = null,
             onAccountCleared = {},
             onContactSupport = {}
@@ -224,10 +251,15 @@ fun VerifiedDocumentsScreenPreview() {
     }
 }
 
-@Preview(name = "Total Earnings", showBackground = true, widthDp = PREVIEW_WIDTH_DP, heightDp = PREVIEW_HEIGHT_DP)
-@Composable
-fun TotalEarningsScreenPreview() {
-    HomieeHelperTheme {
-        TotalEarningsScreen(onBackClick = {})
-    }
-}
+//@Preview(name = "Reviews Received", showBackground = true, widthDp = PREVIEW_WIDTH_DP, heightDp = PREVIEW_HEIGHT_DP)
+//@Composable
+//fun ReviewsReceivedScreenPreview() {
+//    val viewModel = remember { ReviewsReceivedViewModel { PREVIEW_REVIEWS_API } }
+//    HomieeHelperTheme {
+//        ReviewsReceivedScreen(
+//            helperId = 12,
+//            onBack = {},
+//            viewModel = viewModel
+//        )
+//    }
+//}

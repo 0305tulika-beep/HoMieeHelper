@@ -47,6 +47,8 @@ fun MyJobsScreen(
     val completedDtos by viewModel.completed.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val loadError by viewModel.loadError.collectAsState()
+    val activeDtos by viewModel.active.collectAsState()
+    val activeJobs = remember(activeDtos) { activeDtos.map { it.toJobBooking() } }
 
     // Fetch fresh jobs every time this screen opens
     LaunchedEffect(Unit) { viewModel.load() }
@@ -128,10 +130,19 @@ fun MyJobsScreen(
                     onChat = onChatWithResident
                 )
 
-                // The bookings API has no "in progress" status, so there is nothing to show yet.
-                JobsTab.ACTIVE -> CenteredBox {
-                    Text("No active job right now", fontSize = 14.sp, color = TextSecondary)
-                }
+                JobsTab.ACTIVE -> JobsListSection(
+                    title = "Active Booking",
+                    jobs = activeJobs,
+                    isLoading = isLoading,
+                    loadError = loadError,
+                    emptyText = "No active job right now",
+                    statusText = "In Progress",
+                    statusBg = InfoCardBg,
+                    statusColor = TealPrimary,
+                    onRetry = { viewModel.load() },
+                    onOpenJob = onOpenJob,
+                    onChat = onChatWithResident
+                )
 
                 JobsTab.COMPLETED -> JobsListSection(
                     title = "Completed Bookings",

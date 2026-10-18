@@ -40,11 +40,13 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.homiee.helper.data.model.HelperProfileResponse
 import com.homiee.helper.data.remote.RetrofitClient
 import androidx.compose.ui.layout.ContentScale
 import coil.compose.SubcomposeAsyncImage
 import com.homiee.helper.ui.components.*
+import com.homiee.helper.ui.screens.reviews.ReviewsReceivedViewModel
 import com.homiee.helper.ui.theme.*
 import com.homiee.helper.viewmodel.AccountActionUiState
 import com.homiee.helper.viewmodel.AccountActionViewModel
@@ -72,8 +74,7 @@ private data class ProfileUi(
     val languages: List<String>,
     val experience: String,
     val workingDays: List<String>,
-    val workingSlot: String,
-    val totalEarnings: String
+    val workingSlot: String
 )
 
 private val allDays = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
@@ -169,9 +170,7 @@ private fun HelperProfileResponse.toUi(): ProfileUi {
             .distinctBy { it.lowercase() },
         experience = experienceLabel(years_of_experience),
         workingDays = working_days.orEmpty().map { it.lowercase() },
-        workingSlot = if (start.isNotBlank() && end.isNotBlank()) "$start  -  $end" else "—",
-        // TODO: not part of the profile response yet — comes from the earnings endpoint.
-        totalEarnings = "₹ 24,750"
+        workingSlot = if (start.isNotBlank() && end.isNotBlank()) "$start  -  $end" else "—"
     )
 }
 
@@ -183,7 +182,8 @@ fun ProfileScreen(
     profileViewModel: ProfileViewModel,
     email: String? = null,
     onViewVerifiedDocuments: () -> Unit,
-    onViewTotalEarnings: () -> Unit,
+    onViewReviewsReceived: () -> Unit,
+    helperId: Int? = null,                   // the helper's id from the profile response
     accountViewModel: AccountActionViewModel? = null,
     onAccountCleared: () -> Unit,
     onContactSupport: () -> Unit,
@@ -194,6 +194,11 @@ fun ProfileScreen(
 ) {
     DashboardSystemBars(darkStatusBarIcons = false)
     var settingsOpen by remember { mutableStateOf(false) }
+
+    // Rating summary for the "Reviews Received" card
+    val reviewsViewModel: ReviewsReceivedViewModel = viewModel()
+    val reviewsState by reviewsViewModel.state.collectAsState()
+    LaunchedEffect(helperId) { helperId?.let { reviewsViewModel.load(it) } }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
@@ -230,7 +235,10 @@ fun ProfileScreen(
                             ui = ui,
                             email = email,
                             onViewVerifiedDocuments = onViewVerifiedDocuments,
-                            onViewTotalEarnings = onViewTotalEarnings,
+                            reviewsAverage = reviewsState.average,
+                            reviewsCount = reviewsState.count,
+                            reviewsLoading = reviewsState.isLoading && helperId != null,
+                            onViewReviewsReceived = onViewReviewsReceived,
                             onEditProfilePhoto = onEditProfilePhoto,
                             onEditProfile = onEditProfile
                         )
@@ -277,7 +285,10 @@ private fun ProfileContent(
     ui: ProfileUi,
     email: String?,
     onViewVerifiedDocuments: () -> Unit,
-    onViewTotalEarnings: () -> Unit,
+    reviewsAverage: Float,
+    reviewsCount: Int,
+    reviewsLoading: Boolean,
+    onViewReviewsReceived: () -> Unit,
     onEditProfilePhoto: () -> Unit,
     onEditProfile: () -> Unit
 ) {
@@ -445,6 +456,7 @@ private fun ProfileContent(
             Text(ui.workingSlot, fontSize = 13.sp, color = TextSecondary)
         }
 
+        // ── Reviews Received (replaces Total Earnings) ──
         Spacer(modifier = Modifier.height(14.dp))
         Row(
             modifier = Modifier
@@ -452,7 +464,7 @@ private fun ProfileContent(
                 .then(cardElevation)
                 .clip(RoundedCornerShape(16.dp))
                 .background(Color.White)
-                .clickable { onViewTotalEarnings() }
+                .clickable { onViewReviewsReceived() }
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -460,12 +472,24 @@ private fun ProfileContent(
                 modifier = Modifier.size(40.dp).clip(CircleShape).background(InfoCardBg),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Filled.AccountBalanceWallet, contentDescription = null, tint = TealPrimary, modifier = Modifier.size(20.dp))
+                Icon(Icons.Filled.Star, contentDescription = null, tint = TealPrimary, modifier = Modifier.size(20.dp))
             }
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text("Total Earnings", fontSize = 12.sp, color = TextSecondary)
-                Text(ui.totalEarnings, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                Text("Reviews Received", fontSize = 12.sp, color = TextSecondary)
+                Text(
+                    text = when {
+                        reviewsLoading -> "—"
+                        reviewsCount == 0 -> "No reviews yet"
+                        else -> String.format(
+                            Locale.US, "%.1f ★  ·  %d %s",
+                            reviewsAverage, reviewsCount, if (reviewsCount == 1) "review" else "reviews"
+                        )
+                    },
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary
+                )
             }
             Text("View Details", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = TealPrimary)
             Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = TealPrimary)

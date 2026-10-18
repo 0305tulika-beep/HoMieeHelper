@@ -5,7 +5,9 @@ import androidx.compose.material.icons.filled.Person
 import com.homiee.helper.data.model.BookingDto
 import com.homiee.helper.data.model.amountLabel
 import com.homiee.helper.data.model.dateLabel
+import com.homiee.helper.data.model.endMillis
 import com.homiee.helper.data.model.formatApiTime
+import com.homiee.helper.data.model.startMillis
 import com.homiee.helper.data.model.timeRangeLabel
 
 /**
@@ -77,17 +79,31 @@ fun BookingDto.toJobRequest(): JobRequest = JobRequest(
     instructions = specialInstructions.orEmpty()
 )
 
-fun BookingDto.toJobBooking(): JobBooking = JobBooking(
-    id = id.toString(),
-    residentName = residentName.ifBlank { "Resident" },
-    residentInitials = initialsOf(residentName),
-    service = serviceTypeFor(service),
-    location = "",
-    fullAddress = "",
-    date = dateLabel(),
-    time = timeRangeLabel(),
-    duration = durationLabel(startTime, endTime),
-    salary = amountLabel(),
-    status = if (status.equals("completed", true)) BookingStatus.COMPLETED else BookingStatus.UPCOMING,
-    instructions = specialInstructions.orEmpty()
-)
+/**
+ * The status follows the clock for accepted jobs:
+ *  - completed on the server, OR end time passed  -> COMPLETED
+ *  - start time reached, end not yet              -> ACTIVE
+ *  - otherwise                                    -> UPCOMING
+ */
+fun BookingDto.toJobBooking(nowMillis: Long = System.currentTimeMillis()): JobBooking {
+    val confirmed = status.equals("confirmed", true)
+    return JobBooking(
+        id = id.toString(),
+        residentName = residentName.ifBlank { "Resident" },
+        residentInitials = initialsOf(residentName),
+        service = serviceTypeFor(service),
+        location = "",
+        fullAddress = "",
+        date = dateLabel(),
+        time = timeRangeLabel(),
+        duration = durationLabel(startTime, endTime),
+        salary = amountLabel(),
+        status = when {
+            status.equals("completed", true) ||
+                    (confirmed && endMillis() in 1..nowMillis) -> BookingStatus.COMPLETED
+            confirmed && startMillis() in 1..nowMillis -> BookingStatus.ACTIVE
+            else -> BookingStatus.UPCOMING
+        },
+        instructions = specialInstructions.orEmpty()
+    )
+}

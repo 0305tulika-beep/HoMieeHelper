@@ -11,8 +11,6 @@ import androidx.lifecycle.viewModelScope
 import com.homiee.helper.data.repository.ApiResult
 import com.homiee.helper.data.repository.UserDetailsRepository
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 class AvailabilityViewModel(
     private val repository: UserDetailsRepository
@@ -25,24 +23,28 @@ class AvailabilityViewModel(
     // ---- Form state (lives here so it survives navigating away and back) ----
     // Display day names ("Mon", "Tue", ...). No days preselected.
     val selectedDays = mutableStateListOf<String>()
+
+    // 24-hour "HH:mm" (e.g. "09:30"). Empty string = not chosen yet.
     var startTime by mutableStateOf(""); private set
     var endTime by mutableStateOf(""); private set
 
-    private val startIndex: Int get() = timeSlots.indexOf(startTime) // -1 if not chosen
-    private val endIndex: Int get() = timeSlots.indexOf(endTime)     // -1 if not chosen
+    /** "HH:mm" -> minutes since midnight, or -1 if empty/invalid. */
+    private fun toMinutes(time: String): Int {
+        val parts = time.split(":")
+        val h = parts.getOrNull(0)?.toIntOrNull() ?: return -1
+        val m = parts.getOrNull(1)?.toIntOrNull() ?: return -1
+        return h * 60 + m
+    }
 
-    // Only offer times that keep start strictly before end.
-    val startOptions: List<String>
-        get() = if (endIndex >= 0) timeSlots.filterIndexed { i, _ -> i < endIndex } else timeSlots
-    val endOptions: List<String>
-        get() = if (startIndex >= 0) timeSlots.filterIndexed { i, _ -> i > startIndex } else timeSlots
+    private val startMinutes: Int get() = toMinutes(startTime)
+    private val endMinutes: Int get() = toMinutes(endTime)
 
     /** Continue stays disabled until days + a valid start/end are chosen. */
     val isFormValid: Boolean
         get() = selectedDays.isNotEmpty() &&
-                startIndex >= 0 &&
-                endIndex >= 0 &&
-                startIndex < endIndex
+                startMinutes >= 0 &&
+                endMinutes >= 0 &&
+                startMinutes < endMinutes
 
     fun toggleDay(day: String) {
         if (!selectedDays.remove(day)) selectedDays.add(day)
@@ -50,11 +52,22 @@ class AvailabilityViewModel(
 
     fun onStartSelected(picked: String) {
         startTime = picked
+        errorMessage = null
         // If the chosen end is no longer after the new start, clear it.
-        if (endIndex in 0..timeSlots.indexOf(picked)) endTime = ""
+        if (endMinutes in 0..toMinutes(picked)) {
+            endTime = ""
+        }
     }
 
-    fun onEndSelected(picked: String) { endTime = picked }
+    fun onEndSelected(picked: String) {
+        if (startMinutes >= 0 && toMinutes(picked) <= startMinutes) {
+            // Reject an end time that is not after the start time.
+            errorMessage = "End time must be after start time"
+            return
+        }
+        endTime = picked
+        errorMessage = null
+    }
 
     fun submit(onSuccess: () -> Unit) {
         if (!isFormValid || isLoading) return
@@ -73,16 +86,12 @@ class AvailabilityViewModel(
         }
     }
 
-    // API expects 24-hour "HH:mm:ss" (e.g. "09:00:00"); the dropdown shows
-    // 12-hour labels, so convert on submit.
-    private fun to24HourSeconds(label: String): String {
-        return try {
-            val input = SimpleDateFormat("h:mm a", Locale.US)
-            val output = SimpleDateFormat("HH:mm:ss", Locale.US)
-            output.format(input.parse(label)!!)
-        } catch (e: Exception) {
-            "00:00:00"
-        }
+    // API expects 24-hour "HH:mm:ss" (e.g. "09:00:00"). We already store "HH:mm",
+    // so just append the seconds.
+    private fun to24HourSeconds(time: String): String {
+        val minutes = toMinutes(time)
+        if (minutes < 0) return "00:00:00"
+        return String.format(java.util.Locale.US, "%02d:%02d:00", minutes / 60, minutes % 60)
     }
 
     companion object {
@@ -90,12 +99,6 @@ class AvailabilityViewModel(
         private val dayCodeMap = mapOf(
             "Mon" to "mon", "Tue" to "tue", "Wed" to "wed", "Thu" to "thu",
             "Fri" to "fri", "Sat" to "sat", "Sun" to "sun"
-        )
-
-        // Ordered earliest -> latest, so the list index can be used to compare times.
-        private val timeSlots = listOf(
-            "6:00 AM", "7:00 AM", "8:00 AM", "9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM",
-            "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM", "8:00 PM"
         )
 
         fun Factory(context: Context): ViewModelProvider.Factory = object : ViewModelProvider.Factory {

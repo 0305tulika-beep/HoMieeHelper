@@ -1,5 +1,6 @@
 package com.homiee.helper.ui.navigation
 
+import android.R.attr.id
 import android.app.Activity
 import android.widget.Toast
 import androidx.compose.runtime.Composable
@@ -18,6 +19,7 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.homiee.helper.data.local.TokenManager
+import com.homiee.helper.data.model.HelperProfileResponse
 import com.homiee.helper.ui.components.HelperNavItem
 import com.homiee.helper.viewmodel.EditProfileViewModel
 import com.homiee.helper.viewmodel.HelperBookingViewModel
@@ -49,10 +51,10 @@ import com.homiee.helper.ui.screens.helper.MessagesScreen
 import com.homiee.helper.ui.screens.helper.MyJobsScreen
 import com.homiee.helper.ui.screens.helper.ProfileScreen
 import com.homiee.helper.ui.screens.helper.RequestDetailsScreen
-import com.homiee.helper.ui.screens.helper.TotalEarningsScreen
 import com.homiee.helper.ui.screens.helper.VerifiedDocumentsScreen
 import com.homiee.helper.ui.screens.helper.toJobBooking
 import com.homiee.helper.ui.screens.helper.toJobRequest
+import com.homiee.helper.ui.screens.reviews.ReviewsReceivedScreen
 import com.homiee.helper.viewmodel.AccountActionViewModel
 import com.homiee.helper.viewmodel.AddressInformationViewModel
 import com.homiee.helper.viewmodel.AvailabilityViewModel
@@ -68,6 +70,15 @@ private const val ONBOARDING_GRAPH = "onboarding_graph"
 
 // Edit Profile for an already-onboarded helper (opened from the Profile tab).
 private const val EDIT_PROFILE_ROUTE = "edit_profile"
+
+// Reviews the helper has received (opened from the Profile tab).
+private const val REVIEWS_RECEIVED_ROUTE = "reviews_received/{helperId}"
+private fun reviewsReceivedRoute(helperId: Int) = "reviews_received/$helperId"
+
+// ONE LINE TO CHECK: the helper's id inside the profile response.
+// If HelperProfileResponse has no id field yet, add `val id: Int?` to it (the backend profile
+// endpoint must return it). If it's named differently (helper_id / user_id), change `id` here.
+private fun HelperProfileResponse.helperIdOrNull(): Int? = id
 
 @Composable
 fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
@@ -409,6 +420,9 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
             // Email saved at sign-up (OTP verify) / login
             val email = remember { TokenManager.getInstance(profileContext).getUserEmail() }
 
+            // The helper's id (null until the profile has loaded) — used to fetch their reviews
+            val helperId = profileViewModel.profile?.helperIdOrNull()
+
             val goToLoginCleared: () -> Unit = {
                 // Drop this helper's bookings so the next account never sees them.
                 bookingViewModel.clear()
@@ -421,7 +435,10 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
                 profileViewModel = profileViewModel,
                 email = email,
                 onViewVerifiedDocuments = { navController.navigate(Screen.VerifiedDocuments.route) },
-                onViewTotalEarnings = { navController.navigate(Screen.TotalEarnings.route) },
+                onViewReviewsReceived = {
+                    helperId?.let { navController.navigate(reviewsReceivedRoute(it)) }
+                },
+                helperId = helperId,
                 onEditProfile = { navController.navigate(EDIT_PROFILE_ROUTE) },
                 accountViewModel = accountViewModel,
                 onAccountCleared = goToLoginCleared,
@@ -474,8 +491,15 @@ fun HomieeNavHost(navController: NavHostController = rememberNavController()) {
             )
         }
 
-        composable(Screen.TotalEarnings.route) {
-            TotalEarningsScreen(onBackClick = { navController.popBackStack() })
+        // Reviews Received (replaces the old Total Earnings screen)
+        composable(
+            route = REVIEWS_RECEIVED_ROUTE,
+            arguments = listOf(navArgument("helperId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            ReviewsReceivedScreen(
+                helperId = backStackEntry.arguments?.getInt("helperId") ?: 0,
+                onBack = { navController.popBackStack() }
+            )
         }
     }
 }

@@ -81,3 +81,16 @@ fun BookingDto.timeRangeLabel(): String =
 
 fun BookingDto.amountLabel(): String =
     totalAmount.takeIf { it.isNotBlank() }?.let { "₹$it" } ?: ""
+
+// ── Exact start / end moments (used to move jobs Upcoming -> Active -> Completed) ──
+
+/** "2026-07-12" + "10:30:00" -> epoch millis in the phone's time zone (0 if it can't be parsed). */
+private fun parseBookingMillis(date: String, time: String): Long = try {
+    SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).parse("$date $time")?.time ?: 0L
+} catch (e: Exception) {
+    0L
+}
+
+fun BookingDto.startMillis(): Long = parseBookingMillis(bookingDate, startTime)
+
+fun BookingDto.endMillis(): Long = parseBookingMillis(bookingDate, endTime)

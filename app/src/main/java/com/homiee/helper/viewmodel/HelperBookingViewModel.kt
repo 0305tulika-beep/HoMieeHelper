@@ -3,9 +3,12 @@ package com.homiee.helper.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.homiee.helper.data.model.BookingDto
+import com.homiee.helper.data.model.endMillis
+import com.homiee.helper.data.model.startMillis
 import com.homiee.helper.data.repository.BookingRepository
 import com.homiee.helper.data.repository.BookingResult
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -13,6 +16,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -21,20 +25,39 @@ private const val STATUS_PENDING = "pending"
 private const val STATUS_CONFIRMED = "confirmed"
 private const val STATUS_COMPLETED = "completed"
 
+/** How often the clock is re-checked so jobs move between tabs on their own. */
+private const val CLOCK_TICK_MS = 30_000L
+
+private fun BookingDto.isConfirmed() = status.equals(STATUS_CONFIRMED, true)
+
 private fun List<BookingDto>.pendingOnly() =
     filter { it.status.equals(STATUS_PENDING, true) }.sortedByDescending { it.createdAt }
 
-private fun List<BookingDto>.confirmedOnly() =
-    filter { it.status.equals(STATUS_CONFIRMED, true) }.sortedBy { it.bookingDate + it.startTime }   // ISO strings sort correctly
+/** Accepted and the start time hasn't arrived yet (soonest first). */
+private fun List<BookingDto>.upcomingAt(now: Long) =
+    filter { it.isConfirmed() && (it.startMillis() == 0L || now < it.startMillis()) }
+        .sortedBy { it.bookingDate + it.startTime }          // ISO strings sort correctly
 
-private fun List<BookingDto>.completedOnly() =
-    filter { it.status.equals(STATUS_COMPLETED, true) }.sortedByDescending { it.bookingDate + it.startTime }
+/** Accepted and happening right now: start <= now < end. */
+private fun List<BookingDto>.activeAt(now: Long) =
+    filter { it.isConfirmed() && it.startMillis() in 1..now && now < it.endMillis() }
+        .sortedBy { it.bookingDate + it.startTime }
+
+/** Marked completed by the server, OR accepted and the end time has passed. Most recent first. */
+private fun List<BookingDto>.completedAt(now: Long) =
+    filter {
+        it.status.equals(STATUS_COMPLETED, true) ||
+                (it.isConfirmed() && it.endMillis() in 1..now)
+    }.sortedByDescending { it.bookingDate + it.startTime }
 
 /**
  * One shared source of truth for every helper screen (Home, Job Requests,
  * My Jobs, Request/Job details). It fetches ?status=all once and derives the
- * three lists locally, so accepting a request moves it from "requests" to
+ * lists locally, so accepting a request moves it from "requests" to
  * "upcoming" instantly, on every screen, with no extra network call.
+ *
+ * Accepted jobs also move on their own as time passes:
+ * Upcoming -> Active (start time reached) -> Completed (end time reached).
  *
  * Create it ONCE in HomieeNavHost and pass it down.
  *
@@ -49,20 +72,26 @@ class HelperBookingViewModel(
     private val _bookings = MutableStateFlow(initialBookings)
     val bookings: StateFlow<List<BookingDto>> = _bookings.asStateFlow()
 
+    // The current time, refreshed on a timer; the lists below recompute whenever it changes.
+    private val initialNow = System.currentTimeMillis()
+    private val _now = MutableStateFlow(initialNow)
+
     /** New requests waiting for the helper's answer (newest first). */
     val pendingRequests: StateFlow<List<BookingDto>> = _bookings
         .map { it.pendingOnly() }
         .stateIn(viewModelScope, SharingStarted.Eagerly, initialBookings.pendingOnly())
 
-    /** Accepted jobs that haven't been completed yet (soonest first). */
-    val upcoming: StateFlow<List<BookingDto>> = _bookings
-        .map { it.confirmedOnly() }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, initialBookings.confirmedOnly())
+    /** Accepted jobs that haven't started yet. */
+    val upcoming: StateFlow<List<BookingDto>> = combine(_bookings, _now) { list, now -> list.upcomingAt(now) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, initialBookings.upcomingAt(initialNow))
 
-    /** Finished jobs (most recent first). */
-    val completed: StateFlow<List<BookingDto>> = _bookings
-        .map { it.completedOnly() }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, initialBookings.completedOnly())
+    /** Accepted jobs that are in progress right now. */
+    val active: StateFlow<List<BookingDto>> = combine(_bookings, _now) { list, now -> list.activeAt(now) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, initialBookings.activeAt(initialNow))
+
+    /** Finished jobs. */
+    val completed: StateFlow<List<BookingDto>> = combine(_bookings, _now) { list, now -> list.completedAt(now) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, initialBookings.completedAt(initialNow))
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -81,6 +110,16 @@ class HelperBookingViewModel(
     private val _messages = MutableSharedFlow<String>(extraBufferCapacity = 4)
     val messages: SharedFlow<String> = _messages.asSharedFlow()
 
+    init {
+        // Keeps the clock moving so jobs shift tabs without the screen being reopened.
+        viewModelScope.launch {
+            while (true) {
+                delay(CLOCK_TICK_MS)
+                _now.value = System.currentTimeMillis()
+            }
+        }
+    }
+
     // NOTE: no fetch in init - screens call load() when they appear.
     fun load() {
         loadJob?.cancel()
@@ -93,6 +132,7 @@ class HelperBookingViewModel(
             when (val result = repo.incomingBookings("all")) {
                 is BookingResult.Success -> {
                     _bookings.value = result.data.data.orEmpty()
+                    _now.value = System.currentTimeMillis()
                     _isLoading.value = false
                 }
                 is BookingResult.Error -> {
