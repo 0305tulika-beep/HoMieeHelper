@@ -1,11 +1,22 @@
 package com.homiee.helper.ui.screens.helper
 
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -20,14 +31,56 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.homiee.helper.R
 import com.homiee.helper.ui.components.*
 import com.homiee.helper.ui.theme.*
 import com.homiee.helper.viewmodel.HelperBookingViewModel
 
-private enum class JobsTab(val label: String) { UPCOMING("Upcoming"), ACTIVE("Active"), COMPLETED("Completed") }
+private enum class JobsTab(val label: String, val icon: ImageVector) {
+    UPCOMING("Upcoming", Icons.Filled.DateRange),
+    ACTIVE("Active", Icons.Filled.Build),
+    COMPLETED("Completed", Icons.Filled.CheckCircle)
+}
+
+/** Everything the empty state needs for one tab. */
+private data class EmptyContent(
+    @DrawableRes val imageRes: Int,
+    val title: String,
+    val description: String,
+    val tip: String,
+    val tipIcon: ImageVector
+)
+
+private val upcomingEmpty = EmptyContent(
+    imageRes = R.drawable.upcomming,
+    title = "No upcoming jobs",
+    description = "You don't have any upcoming bookings.\nYour upcoming jobs will appear here.",
+    tip = "When you get a new booking, it will show up here.",
+    tipIcon = Icons.Filled.DateRange
+)
+
+private val activeEmpty = EmptyContent(
+    imageRes = R.drawable.active,
+    title = "No active job right now",
+    description = "You don't have any job in progress.\nYour active job will appear here.",
+    tip = "Once you start a job, it will show up here.",
+    tipIcon = Icons.Filled.Build
+)
+
+private val completedEmpty = EmptyContent(
+    imageRes = R.drawable.completed,
+    title = "No completed jobs yet",
+    description = "You haven't completed any jobs yet.\nFinished jobs will appear here.",
+    tip = "Completed jobs and their details are saved here.",
+    tipIcon = Icons.Filled.CheckCircle
+)
 
 @Composable
 fun MyJobsScreen(
@@ -67,49 +120,72 @@ fun MyJobsScreen(
         }
     ) { innerPadding ->
         Column(modifier = Modifier.fillMaxSize().padding(bottom = innerPadding.calculateBottomPadding())) {
+            // Header
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Brush.verticalGradient(listOf(TealPrimary, TealPrimaryDark)))
-                    .windowInsetsPadding(WindowInsets.statusBars)
-                    .padding(horizontal = 20.dp, vertical = 18.dp)
             ) {
-                Column {
+                // Soft decorative icon on the right, like the reference.
+                Icon(
+                    imageVector = Icons.Filled.DateRange,
+                    contentDescription = null,
+                    tint = Color.White.copy(alpha = 0.12f),
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .padding(end = 24.dp)
+                        .size(84.dp)
+                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .windowInsetsPadding(WindowInsets.statusBars)
+                        .padding(horizontal = 20.dp, vertical = 18.dp)
+                ) {
                     Text("My Jobs", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.White)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        "Manage your bookings and keep your schedule on track.",
+                        "Manage your bookings and keep your schedule \non track.",
                         fontSize = 13.sp,
                         color = Color.White.copy(alpha = 0.9f)
                     )
                 }
             }
 
-            // Segmented tabs
+            // Segmented tabs with icons
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp, vertical = 14.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(14.dp))
                     .background(TealPale)
                     .padding(4.dp)
             ) {
                 JobsTab.entries.forEach { tab ->
                     val selected = tab == selectedTab
-                    Box(
+                    Row(
                         modifier = Modifier
                             .weight(1f)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(if (selected) TealPrimary else Color.Transparent)
+                            .clip(RoundedCornerShape(11.dp))
+                            .background(if (selected) TealPrimaryDark else Color.Transparent)
                             .clickable { selectedTab = tab }
                             .padding(vertical = 10.dp),
-                        contentAlignment = Alignment.Center
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
+                        Icon(
+                            imageVector = tab.icon,
+                            contentDescription = null,
+                            tint = if (selected) Color.White else TealPrimaryDark,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(5.dp))
                         Text(
                             tab.label,
-                            fontSize = 13.sp,
+                            fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = if (selected) Color.White else TealPrimaryDark
+                            color = if (selected) Color.White else TealPrimaryDark,
+                            maxLines = 1
                         )
                     }
                 }
@@ -121,7 +197,7 @@ fun MyJobsScreen(
                     jobs = upcomingJobs,
                     isLoading = isLoading,
                     loadError = loadError,
-                    emptyText = "No upcoming jobs",
+                    empty = upcomingEmpty,
                     statusText = "Confirmed",
                     statusBg = SuccessGreenBg,
                     statusColor = SuccessGreen,
@@ -135,7 +211,7 @@ fun MyJobsScreen(
                     jobs = activeJobs,
                     isLoading = isLoading,
                     loadError = loadError,
-                    emptyText = "No active job right now",
+                    empty = activeEmpty,
                     statusText = "In Progress",
                     statusBg = InfoCardBg,
                     statusColor = TealPrimary,
@@ -149,7 +225,7 @@ fun MyJobsScreen(
                     jobs = completedJobs,
                     isLoading = isLoading,
                     loadError = loadError,
-                    emptyText = "No completed jobs yet",
+                    empty = completedEmpty,
                     statusText = "Completed",
                     statusBg = InfoCardBg,
                     statusColor = TealPrimary,
@@ -177,7 +253,7 @@ private fun JobsListSection(
     jobs: List<JobBooking>,
     isLoading: Boolean,
     loadError: String?,
-    emptyText: String,
+    empty: EmptyContent,
     statusText: String,
     statusBg: Color,
     statusColor: Color,
@@ -199,16 +275,14 @@ private fun JobsListSection(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(text = loadError, fontSize = 13.sp, color = TextSecondary)
+            Text(text = loadError, fontSize = 13.sp, color = TextSecondary, textAlign = TextAlign.Center)
             Spacer(modifier = Modifier.height(4.dp))
             TextButton(onClick = onRetry) {
                 Text("Retry", color = TealPrimary, fontWeight = FontWeight.Bold)
             }
         }
 
-        jobs.isEmpty() -> CenteredBox {
-            Text(emptyText, fontSize = 14.sp, color = TextSecondary)
-        }
+        jobs.isEmpty() -> EmptyJobsState(empty)
 
         else -> LazyColumn(
             contentPadding = PaddingValues(horizontal = 20.dp, vertical = 4.dp),
@@ -228,6 +302,88 @@ private fun JobsListSection(
                 )
             }
             item { Spacer(modifier = Modifier.height(16.dp)) }
+        }
+    }
+}
+
+/**
+ * Empty state: illustration, title, description and a tip card, vertically
+ * centered in the space under the tabs. Scrolls on very small screens.
+ */
+@Composable
+private fun EmptyJobsState(content: EmptyContent) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp, vertical = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Image(
+            painter = painterResource(id = content.imageRes),
+            contentDescription = null,
+            modifier = Modifier
+                .fillMaxWidth(0.7f)
+                .height(190.dp),
+            contentScale = ContentScale.Fit
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        Text(
+            text = content.title,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = TealPrimaryDark,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = content.description,
+            fontSize = 13.sp,
+            color = TextSecondary,
+            lineHeight = 19.sp,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(22.dp))
+
+        // Tip card
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .background(TealPale.copy(alpha = 0.5f))
+                .border(1.dp, TealPale, RoundedCornerShape(16.dp))
+                .padding(horizontal = 14.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(CircleShape)
+                    .background(TealPale),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = content.tipIcon,
+                    contentDescription = null,
+                    tint = TealPrimary,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column {
+                Text("Tip", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = content.tip,
+                    fontSize = 12.sp,
+                    color = TextSecondary,
+                    lineHeight = 17.sp
+                )
+            }
         }
     }
 }
@@ -280,7 +436,7 @@ private fun BookingCard(
                 modifier = Modifier.weight(1f),
                 contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
                 shape = RoundedCornerShape(10.dp),
-                border = androidx.compose.foundation.BorderStroke(1.dp, BorderGray),
+                border = BorderStroke(1.dp, BorderGray),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = TextPrimary)
             ) { Text(primaryActionLabel, fontSize = 12.sp, maxLines = 1) }
             Spacer(modifier = Modifier.width(8.dp))
@@ -289,7 +445,7 @@ private fun BookingCard(
                 modifier = Modifier.weight(1f),
                 contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
                 shape = RoundedCornerShape(10.dp),
-                border = androidx.compose.foundation.BorderStroke(1.dp, TealPrimary),
+                border = BorderStroke(1.dp, TealPrimary),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = TealPrimary)
             ) { Text(secondaryActionLabel, fontSize = 12.sp, maxLines = 1) }
             if (tertiaryActionLabel != null) {
@@ -299,7 +455,7 @@ private fun BookingCard(
                     modifier = Modifier.weight(1f),
                     contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
                     shape = RoundedCornerShape(10.dp),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, SosRed),
+                    border = BorderStroke(1.dp, SosRed),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = SosRed)
                 ) { Text(tertiaryActionLabel, fontSize = 12.sp, maxLines = 1) }
             }

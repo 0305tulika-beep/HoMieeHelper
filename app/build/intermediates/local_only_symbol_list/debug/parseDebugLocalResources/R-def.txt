@@ -1,8 +1,16 @@
 R_DEF: Internal format may change without notice
 local
+drawable active
+drawable b1
+drawable b2
+drawable b3
+drawable b4
+drawable completed
 drawable flashbg
 drawable header
 drawable homebg
+drawable homebg1
+drawable homebg2
 drawable ic_babysitting
 drawable ic_cleaning
 drawable ic_cooking
@@ -10,8 +18,10 @@ drawable ic_eldercare
 drawable ic_service_default
 drawable img
 drawable img_1
+drawable img_2
 drawable logotext
 drawable logotext1
+drawable upcomming
 mipmap ic_launcher
 mipmap ic_launcher_background
 mipmap ic_launcher_foreground

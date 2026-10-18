@@ -2937,8 +2937,13 @@ drawable abc_textfield_search_activated_mtrl_alpha
 drawable abc_textfield_search_default_mtrl_alpha
 drawable abc_textfield_search_material
 drawable abc_vector_test
+drawable active
 drawable avd_hide_password
 drawable avd_show_password
+drawable b1
+drawable b2
+drawable b3
+drawable b4
 drawable btn_checkbox_checked_mtrl
 drawable btn_checkbox_checked_to_unchecked_mtrl_animation
 drawable btn_checkbox_unchecked_mtrl
@@ -2966,6 +2971,7 @@ drawable common_google_signin_btn_text_light
 drawable common_google_signin_btn_text_light_focused
 drawable common_google_signin_btn_text_light_normal
 drawable common_google_signin_btn_text_light_normal_background
+drawable completed
 drawable design_fab_background
 drawable design_ic_visibility
 drawable design_ic_visibility_off
@@ -2976,6 +2982,8 @@ drawable googleg_disabled_color_18
 drawable googleg_standard_color_18
 drawable header
 drawable homebg
+drawable homebg1
+drawable homebg2
 drawable ic_arrow_back_black_24
 drawable ic_babysitting
 drawable ic_call_answer
@@ -3001,6 +3009,7 @@ drawable ic_search_black_24
 drawable ic_service_default
 drawable img
 drawable img_1
+drawable img_2
 drawable indeterminate_static
 drawable logotext
 drawable logotext1
@@ -3079,6 +3088,7 @@ drawable notify_panel_notification_icon_bg
 drawable test_level_drawable
 drawable tooltip_frame_dark
 drawable tooltip_frame_light
+drawable upcomming
 id ALT
 id BOTTOM_END
 id BOTTOM_START

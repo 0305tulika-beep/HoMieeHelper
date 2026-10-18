@@ -1,11 +1,21 @@
 package com.homiee.helper.ui.screens.helper
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -18,9 +28,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.homiee.helper.R
 import com.homiee.helper.ui.components.*
 import com.homiee.helper.ui.theme.*
 import com.homiee.helper.viewmodel.HelperBookingViewModel
@@ -60,7 +74,7 @@ fun JobRequestsScreen(
                 .fillMaxSize()
                 .padding(bottom = innerPadding.calculateBottomPadding())
         ) {
-            // Gradient header — background extends behind the status bar itself,
+            // Gradient header - background extends behind the status bar itself,
             // only the inner text content gets inset-padded, so there's no gap of
             // plain Scaffold background showing above it.
             Box(
@@ -68,11 +82,21 @@ fun JobRequestsScreen(
                     .fillMaxWidth()
                     .background(Brush.verticalGradient(listOf(TealPrimary, TealPrimaryDark)))
             ) {
+                // Soft decorative icon on the right, like the reference.
+                Icon(
+                    imageVector = Icons.Filled.Search,
+                    contentDescription = null,
+                    tint = Color.White.copy(alpha = 0.12f),
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .padding(end = 24.dp)
+                        .size(84.dp)
+                )
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .windowInsetsPadding(WindowInsets.statusBars)
-                        .padding(horizontal = 20.dp, vertical = 18.dp)
+                        .padding(start = 20.dp, end = 110.dp, top = 18.dp, bottom = 18.dp)
                 ) {
                     Text("Job Requests", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.White)
                     Spacer(modifier = Modifier.height(4.dp))
@@ -101,7 +125,12 @@ fun JobRequestsScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
-                        Text(text = loadError ?: "", fontSize = 13.sp, color = TextSecondary)
+                        Text(
+                            text = loadError ?: "",
+                            fontSize = 13.sp,
+                            color = TextSecondary,
+                            textAlign = TextAlign.Center
+                        )
                         Spacer(modifier = Modifier.height(4.dp))
                         TextButton(onClick = { viewModel.load() }) {
                             Text("Retry", color = TealPrimary, fontWeight = FontWeight.Bold)
@@ -109,11 +138,7 @@ fun JobRequestsScreen(
                     }
                 }
 
-                requests.isEmpty() -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("No new requests right now.", fontSize = 13.sp, color = TextSecondary)
-                    }
-                }
+                requests.isEmpty() -> EmptyRequestsState()
 
                 else -> {
                     LazyColumn(
@@ -134,6 +159,88 @@ fun JobRequestsScreen(
                         item { Spacer(modifier = Modifier.height(8.dp)) }
                     }
                 }
+            }
+        }
+    }
+}
+
+/**
+ * Empty state: illustration, title, description and a tip card, vertically
+ * centered in the space under the header. Scrolls on very small screens.
+ */
+@Composable
+private fun EmptyRequestsState() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp, vertical = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.img_2),
+            contentDescription = null,
+            modifier = Modifier
+                .fillMaxWidth(0.7f)
+                .height(190.dp),
+            contentScale = ContentScale.Fit
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        Text(
+            text = "No new requests right now.",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = TealPrimaryDark,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "You're all caught up! New job requests\nfrom residents will appear here.",
+            fontSize = 13.sp,
+            color = TextSecondary,
+            lineHeight = 19.sp,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(22.dp))
+
+        // Tip card
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .background(TealPale.copy(alpha = 0.5f))
+                .border(1.dp, TealPale, RoundedCornerShape(16.dp))
+                .padding(horizontal = 14.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(CircleShape)
+                    .background(TealPale),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Info,
+                    contentDescription = null,
+                    tint = TealPrimary,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column {
+                Text("Tip", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "Check this section regularly so you don't miss any new requests.",
+                    fontSize = 12.sp,
+                    color = TextSecondary,
+                    lineHeight = 17.sp
+                )
             }
         }
     }
@@ -180,7 +287,7 @@ private fun JobRequestCard(
                 enabled = !isResponding,
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(10.dp),
-                border = androidx.compose.foundation.BorderStroke(1.dp, SosRed),
+                border = BorderStroke(1.dp, SosRed),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = SosRed)
             ) { Text("Reject", fontSize = 13.sp) }
             Spacer(modifier = Modifier.width(10.dp))
@@ -213,6 +320,6 @@ private fun InfoChip(text: String) {
             .background(ChipBlueBg)
             .padding(horizontal = 9.dp, vertical = 5.dp)
     ) {
-        Text(text = text, fontSize = 11.sp, color = TextSecondary, fontWeight = FontWeight.Medium)
+        Text(text = text, fontSize = 11.sp, color = TextSecondary, fontWeight = FontWeight.Bold.let { FontWeight.Medium })
     }
 }
